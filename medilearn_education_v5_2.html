@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>MediLearn Education - v5.2 Official</title>
+    
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230284c7'/%3E%3Cpath fill='white' d='M128 80c-26.5 0-48 21.5-48 48v288c0 26.5 21.5 48 48 48h256c26.5 0 48-21.5 48-48V128c0-26.5-21.5-48-48-48H128zm144 96c8.8 0 16 7.2 16 16v48h48c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16h-48v48c0 8.8-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16v-48h-48c-8.8 0-16-7.2-16-16v-32c0-8.8 7.2-16 16-16h48v-48c0-8.8 7.2-16 16-16h32z'/%3E%3C/svg%3E" type="image/svg+xml">
+    
+    <!-- LIBRARIES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- DOCUMENT & MEDIA READER ENGINES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            text: '#f1f5f9',
+                            border: '#334155'
+                        }
+                    },
+                    screens: { 'xs': '475px' },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'float-slow': 'float 8s ease-in-out 1s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html { -webkit-overflow-scrolling: touch; }
+        body { -webkit-tap-highlight-color: transparent; transition: background-color 0.3s ease, color 0.3s ease; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* SPLASH SCREEN STYLES */
+        #appSplashScreen {
+            background: radial-gradient(circle at center, #0ea5e9 0%, #0c4a6e 100%);
+            z-index: 999999;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        .med-bg-icon { position: absolute; color: white; opacity: 0.08; z-index: 0; pointer-events: none; }
+        .loading-bar-container { background: rgba(255, 255, 255, 0.2); border-radius: 99px; padding: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .loading-bar-fill { background: #ffffff; border-radius: 99px; width: 0%; height: 100%; transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
+        .bounce-logo { animation: bounceIn 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+        /* ANIMATIONS & LOADERS */
+        .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #0284c7; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        .viewer-loader { border: 4px solid #e0f2fe; border-radius: 50%; border-top: 4px solid #0284c7; width: 48px; height: 48px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spinOne { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes heartbeat { 0% { transform: scale(1); } 25% { transform: scale(1.2); } 50% { transform: scale(1); } 75% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+        
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .animate-fade-out { animation: fadeOut 0.5s ease-out forwards; }
+        .animate-heartbeat { animation: heartbeat 0.5s ease-in-out; }
+        .animate-bounce-in { animation: bounceIn 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) both; }
+        .group:hover .fa-gear { animation: spinOne 1s ease-in-out; }
+
+        .view-btn.active { background-color: #0284c7; color: white; border-color: #0284c7; }
+        .cat-popup-btn.active { background-color: #0284c7; color: white; border-color: #0284c7; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3); }
+
+        #offlineOverlay { transition: opacity 0.3s ease-in-out; }
+        .iframe-wrapper { -webkit-overflow-scrolling: touch; overflow-y: auto; }
+
+        /* SECURITY STYLES */
+        #devLockOverlay { backdrop-filter: blur(10px); background-color: rgba(15, 23, 42, 0.98); }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        .license-input { letter-spacing: 0.1em; text-transform: uppercase; }
+
+        #welcomeOverlay { backdrop-filter: blur(8px); }
+        .folder-card { transition: all 0.2s; }
+        .folder-card:active { transform: scale(0.96); }
+        .list-row:hover { background-color: #f8fafc; }
+        .dark .list-row:hover { background-color: #1e293b; }
+        .terms-content::-webkit-scrollbar { width: 4px; }
+        .terms-content::-webkit-scrollbar-track { background: transparent; }
+        .terms-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* DOCX VIEWER STYLING */
+        .docx-rendered-content table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+        .docx-rendered-content th, .docx-rendered-content td { border: 1px solid #cbd5e1; padding: 0.5rem; }
+        .dark .docx-rendered-content th, .dark .docx-rendered-content td { border-color: #475569; }
+        .docx-rendered-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem auto; display: block; }
+        .docx-rendered-content p { margin-bottom: 0.75rem; }
+        .docx-rendered-content h1, .docx-rendered-content h2, .docx-rendered-content h3 { font-weight: bold; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #0369a1; }
+        .dark .docx-rendered-content h1, .dark .docx-rendered-content h2, .dark .docx-rendered-content h3 { color: #38bdf8; }
+
+        /* EXCEL TABLE STYLING */
+        .excel-table-container table { border-collapse: collapse; width: 100%; font-size: 0.8125rem; font-family: ui-monospace, monospace; }
+        .excel-table-container th { background-color: #0284c7; color: white; padding: 0.5rem 0.75rem; text-align: left; position: sticky; top: 0; z-index: 5; font-weight: 600; }
+        .excel-table-container td { padding: 0.45rem 0.75rem; border: 1px solid #e2e8f0; white-space: nowrap; }
+        .dark .excel-table-container td { border-color: #334155; }
+        .excel-table-container tr:nth-child(even) { background-color: #f8fafc; }
+        .dark .excel-table-container tr:nth-child(even) { background-color: #1e293b; }
+        .excel-table-container tr:hover { background-color: #e0f2fe; }
+        .dark .excel-table-container tr:hover { background-color: #0c4a6e; }
+
+        /* SWEETALERT Z-INDEX FIX */
+        .swal2-container { z-index: 200000 !important; }
+        body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) { overflow-y: hidden !important; padding-right: 0 !important; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark-bg text-slate-800 dark:text-dark-text flex flex-col min-h-screen font-sans relative pb-safe transition-colors duration-300" style="zoom: 1.05;">
+
+    <div id="offlineOverlay" class="hidden fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md text-white transition-all duration-300">
+        <div class="relative flex flex-col items-center">
+            <div class="mb-8 relative animate-pulse">
+                <i class="fa-solid fa-wifi text-8xl text-red-500 opacity-80"></i>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-slash text-6xl text-white transform rotate-90 opacity-90"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-extrabold tracking-widest mb-3 text-red-500">OFFLINE</h2>
+            <p class="text-gray-300 text-sm mb-8 text-center px-6 max-w-xs">Koneksi internet Anda terputus. Mohon periksa jaringan Anda.</p>
+            <button onclick="location.reload()" class="px-8 py-3 rounded-full border border-white/30 hover:bg-white/10 active:bg-white/20 transition text-sm font-bold tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> COBA LAGI
+            </button>
+        </div>
+    </div>
+
+    <div id="appSplashScreen" class="hidden fixed inset-0 flex flex-col items-center justify-center text-white font-sans">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <i class="fa-solid fa-heart-pulse med-bg-icon text-7xl top-10 left-8 animate-float"></i>
+            <i class="fa-solid fa-dna med-bg-icon text-8xl bottom-20 right-8 animate-float-delayed"></i>
+            <i class="fa-solid fa-pills med-bg-icon text-5xl top-1/2 left-4 animate-pulse-slow"></i>
+            <i class="fa-solid fa-user-doctor med-bg-icon text-6xl top-24 right-10 animate-float-slow"></i>
+            <i class="fa-solid fa-staff-snake med-bg-icon text-[18rem] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.03]"></i>
+        </div>
+        <div class="relative z-10 flex flex-col items-center w-full max-w-xs px-6">
+            <div class="mb-8 bounce-logo bg-white rounded-3xl p-5 shadow-xl relative overflow-hidden group">
+                <i class="fa-solid fa-book text-7xl text-medical-600 group-hover:scale-105 transition-transform duration-500"></i>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fa-solid fa-stethoscope text-4xl text-medical-800 opacity-90 drop-shadow-md" style="transform: rotate(-10deg) translate(2px, 2px);"></i>
+                </div>
+                <div class="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-transparent via-white to-transparent opacity-20 rounded-3xl pointer-events-none"></div>
+            </div>
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-extrabold tracking-tight mb-1 drop-shadow-md">MediLearn</h1>
+                <p class="text-xl font-light tracking-widest uppercase border-b border-white/30 pb-1 inline-block">Education</p>
+            </div>
+            <div class="w-full loading-bar-container h-3 mb-3">
+                <div id="splashProgress" class="loading-bar-fill"></div>
+            </div>
+            <div class="flex justify-between w-full text-[10px] font-medium text-blue-100 uppercase tracking-wider px-1">
+                <span id="splashText">Memuat Sistem...</span>
+                <span>v5.2 Official</span>
+            </div>
+        </div>
+        <div class="absolute bottom-6 text-center opacity-40">
+            <p class="text-[9px] tracking-[0.2em]">POWERED BY MEDILEARN</p>
+        </div>
+    </div>
+
+    <div id="devLockOverlay" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center hidden text-white p-6 font-mono">
+        <div class="max-w-md w-full text-center space-y-6">
+            <div class="text-6xl text-red-500 mb-4 animate-pulse"><i class="fa-solid fa-lock"></i></div>
+            <h1 class="text-2xl font-bold tracking-widest text-red-500">AKSES TERKUNCI</h1>
+            <p class="text-gray-400 text-xs">ID Perangkat ini belum terdaftar. Hubungi Admin.</p>
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-2xl">
+                <div class="mb-6 bg-gray-900 p-3 rounded border border-gray-600">
+                    <p class="text-[10px] text-gray-500 uppercase mb-1">ID Perangkat:</p>
+                    <p id="displayDeviceId" class="text-lg font-bold text-yellow-400 font-mono select-all cursor-pointer" onclick="copyToClipboard(this.innerText)" title="Klik untuk Salin">LOADING...</p>
+                </div>
+                <div class="relative mb-4">
+                    <i class="fa-solid fa-key absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" id="activationInput" placeholder="Masukkan Kode Aktivasi" class="license-input w-full bg-gray-900 border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-medical-500 focus:ring-1 focus:ring-medical-500 font-mono transition-all text-center">
+                </div>
+                <div class="space-y-3">
+                    <button onclick="attemptActivation()" class="w-full bg-medical-600 hover:bg-medical-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg active:scale-95">AKTIFKAN PERANGKAT</button>
+                    <button onclick="requestViaWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition-all shadow text-xs flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-lg"></i> Minta Akses via WhatsApp</button>
+                </div>
+            </div>
+            <div id="devToolsPanel" class="hidden mt-8 pt-8 border-t border-gray-800">
+                <h3 class="text-green-500 font-bold mb-2"><i class="fa-solid fa-user-shield"></i> Developer Key Generator</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="targetDeviceId" placeholder="Client Device ID" class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs text-white">
+                    <button onclick="generateKeyForClient()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-xs font-bold">GENERATE</button>
+                </div>
+                <div id="generatedKeyDisplay" class="mt-2 text-xl font-mono text-white h-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainAppContent" class="flex flex-col min-h-screen w-full hidden opacity-0 transition-opacity duration-500 relative">
+
+        <!-- Floating Controls: Reload & Exit App (NW.JS Compatible) -->
+        <div class="fixed bottom-6 right-6 z-[9000] flex flex-col gap-3 group">
+             <button onclick="location.reload()" title="Refresh Halaman" class="w-12 h-12 bg-white dark:bg-slate-700 text-medical-600 dark:text-white rounded-full shadow-xl border border-gray-100 dark:border-slate-600 hover:scale-110 active:scale-90 transition-all flex items-center justify-center transform hover:rotate-12">
+                <i class="fa-solid fa-rotate-right text-lg"></i>
+             </button>
+
+             <button onclick="exitApp()" title="Keluar Aplikasi" class="w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-xl shadow-red-600/30 hover:scale-110 active:scale-90 transition-all flex items-center justify-center">
+                <i class="fa-solid fa-power-off text-lg"></i>
+             </button>
+        </div>
+
+        <!-- Welcome Overlay -->
+        <div id="welcomeOverlay" class="fixed inset-0 z-[99000] flex items-center justify-center p-4 bg-slate-900/70 hidden transition-opacity duration-500">
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-sm w-full relative p-6 sm:p-8 animate-fade-in-up text-center border border-gray-100 dark:border-slate-700">
+                <div class="mb-6 flex justify-center">
+                    <div class="w-20 h-20 bg-medical-50 dark:bg-slate-800 rounded-full flex items-center justify-center shadow-md animate-bounce-in">
+                        <i class="fa-solid fa-book-medical text-4xl text-medical-600 dark:text-medical-500"></i>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Selamat Datang!</h2>
+                <h3 class="text-lg font-semibold text-medical-600 dark:text-medical-400 mb-4">MediLearn Education</h3>
+                
+                <p class="text-sm text-gray-500 dark:text-gray-300 mb-6 leading-relaxed">
+                    Aplikasi pembelajaran kedokteran canggih. Pastikan kamu menyetujui syarat & ketentuan pengguna. Klik mulai untuk memulai belajar.
+                </p>
+
+                <div class="mb-6 text-left bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-200 dark:border-slate-700">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <div class="relative flex items-center">
+                            <input type="checkbox" id="checkTerms" class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 dark:border-slate-600 checked:bg-medical-600 checked:border-medical-600 transition-all">
+                            <i class="fa-solid fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                        </div>
+                        <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors select-none">
+                            Saya setuju dengan <a href="#" onclick="openTermsModal(); return false;" class="text-medical-600 font-bold hover:underline hover:text-medical-700 transition-colors z-10 relative">Syarat & Ketentuan</a>.
+                        </span>
+                    </label>
+                </div>
+
+                <button id="btnStartApp" disabled onclick="finishOnboarding()" 
+                    class="w-full py-3.5 rounded-xl font-bold text-sm transition-all shadow-md transform active:scale-95 flex items-center justify-center gap-2
+                    bg-gray-200 text-gray-400 cursor-not-allowed
+                    disabled:opacity-70 disabled:cursor-not-allowed
+                    enabled:bg-medical-600 enabled:hover:bg-medical-700 enabled:text-white enabled:shadow-lg enabled:shadow-medical-600/30">
+                    <span>Mulai Belajar</span> <i class="fa-solid fa-expand"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Terms Modal -->
+        <div id="termsModal" class="fixed inset-0 z-[99900] flex items-center justify-center p-4 bg-slate-900/80 hidden transition-all duration-300">
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-lg w-full relative z-10 flex flex-col max-h-[85vh] transform transition-all scale-100 animate-fade-in-up border border-gray-200 dark:border-slate-700">
+                <div class="p-4 sm:p-5 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 rounded-t-2xl">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2"><i class="fa-solid fa-file-shield text-medical-600"></i> Syarat & Ketentuan</h3>
+                    <button onclick="closeTermsModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 transition"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto terms-content text-sm text-gray-600 dark:text-gray-300 space-y-4 leading-relaxed">
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">1. Pendahuluan</h4><p>Selamat datang di MediLearn Education. Dengan mengakses atau menggunakan aplikasi ini, Anda dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku.</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">2. Penggunaan Aplikasi</h4><p>Aplikasi ini dirancang sebagai alat bantu belajar (viewer) untuk modul kedokteran dan kesehatan. Pengguna dilarang menyalahgunakan aplikasi untuk tindakan ilegal, plagiarisme, atau distribusi konten tanpa izin.</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">3. Disclaimer Medis</h4><p class="text-red-500 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-100 dark:border-red-800/30"><i class="fa-solid fa-triangle-exclamation"></i> Materi yang terdapat dalam aplikasi ini hanya untuk tujuan pendidikan kedokteran.</p><p class="mt-2">Aplikasi ini dibuat khusus untuk mahasiswa dan profesional kedokteran, tidak untuk masyarakat awam sebagai integritas akademik dan keprofesian.</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">4. Hak Kekayaan Intelektual</h4><p>Seluruh konten modul yang diunggah adalah tanggung jawab pengguna. MediLearn hanya menyediakan platform (viewer). Pastikan Anda memiliki hak akses terhadap file modul yang Anda unggah.</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">5. Keamanan & Data</h4><p>Data modul disimpan secara lokal di perangkat Anda (IndexedDB Browser). Kami tidak mengunggah data Anda ke server cloud eksternal, menjamin privasi penuh data pembelajaran Anda. Harap lakukan Backup data secara berkala.</p></div>
+                    <div><h4 class="font-bold text-gray-800 dark:text-white mb-2">6. Perubahan Ketentuan</h4><p>MediLearn berhak mengubah syarat dan ketentuan ini sewaktu-waktu tanpa pemberitahuan sebelumnya demi peningkatan layanan.</p></div>
+                </div>
+                <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-b-2xl flex justify-end">
+                    <button onclick="closeTermsModal()" class="px-6 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-lg text-sm font-bold shadow-md transition-all active:scale-95">Saya Mengerti</button>
+                </div>
+            </div>
+        </div>
+
+        <header class="bg-white dark:bg-dark-card shadow-sm border-b border-gray-200 dark:border-dark-border sticky top-0 z-30 pt-safe-top transition-colors duration-300">
+            <div class="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-medical-600 text-white p-2 rounded-lg shadow-sm flex-shrink-0"><i class="fa-solid fa-book-medical text-xl"></i></div>
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white tracking-tight leading-none">MediLearn <span class="text-medical-600"> Education v5.2</span></h1>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 hidden sm:block">Learn Smarter, Heal Better!</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="toggleDarkMode()" id="darkModeBtn" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 transition-all border border-gray-200 dark:border-slate-600 active:scale-95"><i class="fa-solid fa-moon"></i></button>
+                    <button onclick="openSettingsModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-all border border-gray-200 dark:border-slate-600 active:scale-95"><i class="fa-solid fa-cloud-arrow-down"></i></button>
+                    <div class="relative hidden sm:block group">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs group-focus-within:text-medical-500 transition-colors"></i>
+                        <input type="text" oninput="setSearch(this.value)" placeholder="Cari..." class="pl-8 pr-4 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-full text-xs text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-medical-500 w-32 md:w-40 transition-all shadow-sm">
+                    </div>
+                    <button onclick="openUploadModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-medical-600 text-white hover:bg-medical-700 transition-all shadow-md active:scale-95 touch-manipulation group" title="Upload Semua Format"><i class="fa-solid fa-plus text-lg"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 w-full p-4 md:p-6 lg:p-8 pb-24">
+            <section class="w-full mb-6">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-layer-group text-medical-500"></i> Perpustakaan</h2>
+                        <div class="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-lg border border-gray-200 dark:border-slate-600">
+                            <button onclick="setViewMode('folders')" id="btnViewFolder" class="view-btn px-3 py-1 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs font-medium transition-all" title="Folder View"><i class="fa-solid fa-folder"></i></button>
+                            <button onclick="setViewMode('grid')" id="btnViewGrid" class="view-btn px-3 py-1 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs font-medium transition-all" title="Grid View"><i class="fa-solid fa-grip"></i></button>
+                            <button onclick="setViewMode('list')" id="btnViewList" class="view-btn px-3 py-1 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs font-medium transition-all" title="List View"><i class="fa-solid fa-list"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <div class="relative sm:hidden w-full">
+                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" oninput="setSearch(this.value)" placeholder="Cari modul..." class="pl-9 pr-4 py-2.5 w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-base dark:text-white focus:outline-none focus:ring-2 focus:ring-medical-500 shadow-sm">
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 justify-between sm:justify-end w-full">
+                            <div id="folderBreadcrumb" class="hidden items-center gap-2 text-sm font-medium">
+                                <button onclick="setViewMode('folders')" class="text-medical-600 hover:underline dark:text-medical-400"><i class="fa-solid fa-folder-open"></i> Folders</button>
+                                <span class="text-gray-400">/</span>
+                                <span id="currentFolderName" class="text-gray-800 dark:text-gray-200">Nama Folder</span>
+                            </div>
+                            <div id="categoryFilterContainer" class="hidden flex gap-2">
+                                <button onclick="openCategoryModal()" id="btnCategoryTrigger" class="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                                    <i class="fa-solid fa-filter text-medical-600"></i> <span id="categoryTriggerText">Kategori</span> <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                </button>
+                                <button onclick="openHistoryModal()" class="px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95" title="Riwayat Belajar"><i class="fa-solid fa-clock-rotate-left text-medical-600"></i></button>
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0" id="sortControl">
+                                <div class="hidden sm:block w-px h-6 bg-gray-300 dark:bg-slate-600"></div>
+                                <div class="relative">
+                                    <select onchange="setSort(this.value)" class="appearance-none bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 py-2 sm:py-1.5 pl-3 pr-8 rounded-lg text-sm sm:text-xs font-medium focus:outline-none focus:ring-2 focus:ring-medical-500 cursor-pointer shadow-sm hover:border-medical-400 transition-colors">
+                                        <option value="newest">Terbaru</option>
+                                        <option value="favorites">Favorit Dulu</option>
+                                        <option value="oldest">Terlama</option>
+                                        <option value="az">Nama (A-Z)</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="fa-solid fa-sort text-xs"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-16 sm:py-20 bg-white dark:bg-dark-card rounded-xl border border-dashed border-gray-300 dark:border-slate-700 text-center shadow-sm mx-auto max-w-md transition-colors">
+                <div class="bg-gray-50 dark:bg-slate-800 p-6 rounded-full mb-4 animate-bounce"><i class="fa-solid fa-folder-plus text-medical-300 dark:text-medical-600 text-4xl"></i></div>
+                <h3 class="text-gray-900 dark:text-white font-semibold text-lg">Belum Ada Materi Pembelajaran</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-xs mx-auto px-4">Upload berkas PDF, Word, PowerPoint, Excel, Video, Gambar, atau HTML Anda.</p>
+                <button onclick="openUploadModal()" class="mt-6 px-6 py-3 bg-medical-600 text-white rounded-lg hover:bg-medical-700 transition font-medium text-sm shadow-md active:scale-95 touch-manipulation">Upload Sekarang</button>
+            </div>
+
+            <div id="mainContentArea" class="w-full"></div>
+        </main>
+
+        <footer class="bg-white dark:bg-dark-card border-t border-gray-200 dark:border-dark-border py-6 mt-auto mb-safe-bottom transition-colors">
+            <div class="w-full px-4 text-center"><p class="text-sm text-gray-500 dark:text-gray-400">© 2025 MediLearn • Smart Med Smart You</p></div>
+        </footer>
+    </div>
+
+    <div id="historyModal" class="fixed inset-0 z-[65] hidden flex items-center justify-center p-4" aria-labelledby="modal-history" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" onclick="closeHistoryModal()"></div>
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full relative z-10 flex flex-col max-h-[80vh] transform transition-all scale-100 animate-fade-in-up">
+            <div class="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 rounded-t-2xl transition-colors">
+                <h3 class="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-medical-600"></i> Riwayat Belajar</h3>
+                <button onclick="closeHistoryModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-0 overflow-y-auto custom-scrollbar flex-1">
+                <div id="historyList" class="divide-y divide-gray-100 dark:divide-slate-700"></div>
+                <div id="emptyHistory" class="hidden p-8 text-center text-gray-400 dark:text-gray-500 text-sm"><i class="fa-regular fa-calendar-xmark text-3xl mb-2 opacity-50"></i><p>Belum ada riwayat.</p></div>
+            </div>
+            <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-b-2xl">
+                <button onclick="clearAllHistory()" class="w-full py-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-slate-700 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2"><i class="fa-solid fa-trash-can"></i> Hapus Semua Riwayat</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" onclick="closeSettingsModal()"></div>
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-sm w-full relative z-10 p-6 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-database text-medical-600"></i> Backup & Restore</h3>
+                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 bg-blue-50 dark:bg-slate-800 rounded-lg border border-blue-100 dark:border-slate-700">
+                    <h4 class="font-bold text-blue-800 dark:text-blue-400 text-sm mb-1"><i class="fa-solid fa-download"></i> Backup Data Lengkap</h4>
+                    <p class="text-xs text-blue-600 dark:text-blue-300 mb-3">Simpan semua file, modul, dan materi ke satu file .json</p>
+                    <button id="btnStartBackup" onclick="backupData()" class="w-full bg-medical-600 hover:bg-medical-700 text-white py-2 rounded-lg text-sm font-bold shadow-sm active:scale-95 transition flex items-center justify-center gap-2"><span>Download Backup</span></button>
+                </div>
+                <div class="p-4 bg-orange-50 dark:bg-slate-800 rounded-lg border border-orange-100 dark:border-slate-700">
+                    <h4 class="font-bold text-orange-800 dark:text-orange-400 text-sm mb-1"><i class="fa-solid fa-upload"></i> Restore Data</h4>
+                    <p class="text-xs text-orange-600 dark:text-orange-300 mb-3">Kembalikan data dari file backup .json</p>
+                    <input type="file" id="restoreInput" accept=".json" class="hidden" onchange="restoreData(this)">
+                    <button onclick="document.getElementById('restoreInput').click()" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg text-sm font-bold shadow-sm active:scale-95 transition">Pilih File Backup</button>
+                </div>
+            </div>
+            <div class="mt-6 text-center text-[10px] text-gray-400 dark:text-gray-500">Data tersimpan aman di penyimpanan IndexedDB perangkat.</div>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4" aria-labelledby="modal-category" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" onclick="closeCategoryModal()"></div>
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full relative z-10 flex flex-col max-h-[80vh] transform transition-all scale-100 animate-fade-in-up">
+            <div class="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800 rounded-t-2xl transition-colors">
+                <h3 class="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2"><i class="fa-solid fa-layer-group text-medical-600"></i> Pilih Kategori</h3>
+                <button onclick="closeCategoryModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <div id="categoryPopupGrid" class="flex flex-wrap gap-2 justify-center content-start"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-upload" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-60 transition-opacity backdrop-blur-sm" onclick="closeUploadModal()"></div>
+        <div class="relative z-10 w-full h-full flex items-center justify-center p-4 sm:p-6">
+            <div class="bg-white dark:bg-dark-card w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100 flex flex-col max-h-[92vh]">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 flex justify-between items-center transition-colors">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-medical-600"></i> Upload Modul & File
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Dukungan: PDF, DOCX, PPT, XLSX, MP4 Video, Gambar, MP3 Audio, dsb.</p>
+                    </div>
+                    <button onclick="closeUploadModal()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-5 overflow-y-auto overscroll-contain flex-1">
+                    <form id="uploadForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 dark:text-gray-300 mb-1.5">Pilih / Buat Folder (Kategori)</label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="newFolderInput" placeholder="Ketik nama folder baru..." class="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-white rounded-lg text-sm focus:ring-1 focus:ring-medical-500 outline-none">
+                                <button type="button" onclick="addNewFolder()" class="bg-medical-50 dark:bg-slate-700 text-medical-600 dark:text-medical-400 hover:bg-medical-100 dark:hover:bg-slate-600 px-3 py-2 rounded-lg text-xs font-bold border border-medical-200 dark:border-slate-600 transition"><i class="fa-solid fa-plus"></i> Buat</button>
+                            </div>
+                            <div id="categoryInputs" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1"></div>
+                            <input type="hidden" id="selectedCategory" required>
+                            <p id="selectedCategoryDisplay" class="text-xs text-medical-600 dark:text-medical-400 font-bold mt-2">Folder Dipilih: <span class="text-gray-500 italic">- Belum dipilih -</span></p>
+                        </div>
+                        <div id="singleTitleGroup">
+                            <label class="block text-xs font-bold uppercase text-gray-700 dark:text-gray-300 mb-1.5">Judul Modul (Opsional)</label>
+                            <input type="text" id="inputTitle" class="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-medical-500 outline-none transition text-sm" placeholder="Otomatis mengambil nama file jika kosong">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-700 dark:text-gray-300 mb-1.5">Pilih Berkas dari Perangkat</label>
+                            <!-- Universal Dropzone across Windows, Mac, Android, iOS without accept filtering -->
+                            <div id="uploadDropZone" class="relative border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 hover:border-medical-500 hover:bg-medical-50/50 dark:hover:bg-slate-700 transition-all text-center cursor-pointer group active:bg-gray-50" onclick="document.getElementById('inputFile').click()">
+                                <div id="uploadIconContainer">
+                                    <i class="fa-solid fa-cloud-arrow-up text-medical-600 text-3xl mb-2 group-hover:scale-110 transition-transform"></i>
+                                </div>
+                                <p class="text-sm text-gray-700 dark:text-gray-200 font-semibold" id="fileNameDisplay">Klik atau Tarik File ke Sini</p>
+                                <p class="text-[11px] text-gray-400 mt-1">Mendukung semua format: Video, Gambar, Dokumen (PDF/Word/PPT/Excel), Audio, HTML, ZIP, dsb.</p>
+                                <div class="flex justify-center gap-3 mt-3 text-xs text-gray-400">
+                                    <span title="Video"><i class="fa-solid fa-file-video text-purple-500"></i> Video</span>
+                                    <span title="PDF"><i class="fa-solid fa-file-pdf text-red-500"></i> PDF</span>
+                                    <span title="Word"><i class="fa-solid fa-file-word text-blue-600"></i> DOCX</span>
+                                    <span title="PPT"><i class="fa-solid fa-file-powerpoint text-orange-500"></i> PPT</span>
+                                    <span title="Gambar"><i class="fa-solid fa-file-image text-emerald-500"></i> Gambar</span>
+                                </div>
+                                <input type="file" id="inputFile" multiple class="hidden" onchange="updateFileDisplay(this)">
+                            </div>
+                        </div>
+                        <div id="uploadStatus" class="hidden p-3 rounded-lg text-sm border flex items-center gap-2"></div>
+                    </form>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 flex justify-end gap-3 pb-safe-bottom">
+                    <button type="submit" form="uploadForm" id="btnUpload" class="px-6 py-2.5 bg-medical-600 hover:bg-medical-700 text-white rounded-lg shadow-md hover:shadow-lg text-sm font-bold transition flex items-center gap-2 touch-manipulation">
+                        <span><i class="fa-solid fa-floppy-disk"></i> Simpan File</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewerModal" class="fixed inset-0 z-[100] hidden bg-gray-900/90 dark:bg-dark-bg flex flex-col h-full w-full" aria-labelledby="modal-viewer" role="dialog" aria-modal="true">
+        <!-- Top Toolbar Header -->
+        <div class="bg-white dark:bg-dark-card shadow-md border-b border-gray-200 dark:border-dark-border h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 relative z-20 pt-safe-top transition-colors">
+            <div class="flex items-center gap-3 overflow-hidden flex-1 mr-2">
+                <div id="viewerHeaderIcon" class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-medical-50 text-medical-600">
+                    <i class="fa-solid fa-book-medical"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate" id="modalTitle">Judul Modul</h3>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[10px] sm:text-xs text-medical-600 dark:text-medical-400 font-semibold bg-medical-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-medical-100 dark:border-slate-600 truncate" id="modalCategory">Folder</span>
+                        <span class="text-[10px] text-gray-400 font-mono hidden sm:inline" id="modalFileSize"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Viewer Action Buttons -->
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="downloadCurrentViewerFile()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5" title="Unduh File Asli">
+                    <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Unduh</span>
+                </button>
+                <button onclick="openCurrentViewerInNewTab()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5" title="Layar Penuh / Tab Baru">
+                    <i class="fa-solid fa-up-right-from-square"></i> <span class="hidden sm:inline">Layar Penuh</span>
+                </button>
+                <button onclick="closeViewerModal()" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 hover:text-red-500 transition" title="Tutup">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Document Viewport Body -->
+        <div class="flex-1 w-full h-full relative bg-gray-100 dark:bg-slate-900 iframe-wrapper overflow-hidden flex flex-col">
+            <div id="viewerLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-dark-bg z-50">
+                <div class="viewer-loader mb-4"></div>
+                <p id="loaderStatusText" class="text-gray-600 dark:text-gray-300 font-semibold animate-pulse text-sm">Memuat materi...</p>
+                <div id="dlProgressContainer" class="w-64 h-3 bg-gray-200 dark:bg-slate-700 rounded-full mt-4 overflow-hidden"><div id="dlProgressBar" class="h-full bg-medical-600 transition-all duration-300 ease-out" style="width: 0%"></div></div>
+                <p id="dlProgressText" class="text-xs text-medical-600 font-bold mt-1 font-mono">0%</p>
+            </div>
+
+            <!-- Native HTML frame -->
+            <iframe id="moduleIframe" class="w-full h-full border-0 block" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
+            
+            <!-- Dynamic Document and Multimedia Engine Reader Viewport -->
+            <div id="dynamicMediaContainer" class="w-full h-full hidden overflow-hidden flex flex-col"></div>
+        </div>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50" onclick="closeEditModal()"></div>
+        <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl max-w-sm w-full relative z-10 p-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-pencil text-medical-600"></i> Edit Judul</h3>
+            <input type="text" id="editTitleInput" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-medical-500 outline-none mb-4">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium">Batal</button>
+                <button onclick="saveTitleEdit()" class="px-4 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-lg text-sm font-medium shadow-md">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50" onclick="closeConfirmModal()"></div>
+        <div class="bg-white dark:bg-dark-card rounded-lg shadow-xl max-w-sm w-full relative z-10 p-6 border-t-4 border-red-500">
+            <div class="flex items-center gap-3 mb-4 text-red-600"><i class="fa-solid fa-triangle-exclamation text-2xl"></i><h3 class="text-lg font-bold text-gray-900 dark:text-white">Hapus?</h3></div>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 text-sm">Item ini akan dihapus permanen.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2.5 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition">Batal</button>
+                <button id="btnConfirmDelete" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition shadow-md">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- CORE DATABASE & MULTI-MEDIA LOGIC --- */
+        const DB_NAME = 'MediLearnDB', DB_VERSION = 2, STORE_NAME = 'modules';
+        let db, allModulesCache = [], currentViewMode = 'grid', activeCategoryFilter = 'Semua', activeSort = localStorage.getItem('ml_sort_pref') || 'newest', activeSearch = '';
+        let currentViewingModule = null;
+        let currentActiveBlobUrl = null;
+        let deleteTargetId = null; 
+        let editTargetId = null;
+        let selectedCategoryForUpload = '';
+
+        // Configure PDF.js Worker
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        // Active State Variables for In-App Readers
+        let pdfState = { 
+            doc: null, 
+            pageNum: 1, 
+            totalPages: 1, 
+            scale: 1.15, 
+            rendering: false, 
+            viewMode: 'page', // 'page' (Per Halaman) | 'scroll' (Scroll Bawah)
+            renderedPages: new Set(),
+            observer: null
+        };
+        let pptxState = { 
+            slides: [], 
+            currentIndex: 0, 
+            title: '', 
+            viewMode: 'slide' // 'slide' (Per Slide) | 'scroll' (Scroll Bawah)
+        };
+        let docxState = { fontSize: 16 };
+        let excelState = { workbook: null, activeSheet: '', originalData: [] };
+        let imageState = { zoom: 1, rotation: 0 };
+
+        /* --- THEME TOGGLE --- */
+        const initTheme = () => { if (localStorage.getItem('ml_theme') === 'dark') { document.documentElement.classList.add('dark'); updateThemeIcon(true); } else { document.documentElement.classList.remove('dark'); updateThemeIcon(false); } };
+        const toggleDarkMode = () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('ml_theme', isDark ? 'dark' : 'light'); updateThemeIcon(isDark); };
+        const updateThemeIcon = (isDark) => { const btn = document.getElementById('darkModeBtn'); btn.innerHTML = isDark ? '<i class="fa-solid fa-sun text-yellow-400"></i>' : '<i class="fa-solid fa-moon"></i>'; if(isDark) { btn.classList.add('bg-slate-700', 'border-slate-600'); btn.classList.remove('bg-gray-100', 'border-gray-200'); } else { btn.classList.remove('bg-slate-700', 'border-slate-600'); btn.classList.add('bg-gray-100', 'border-gray-200'); } };
+
+        /* --- INDEXEDDB HELPER METHODS --- */
+        const initDB = () => {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = (event) => reject("Error opening DB");
+                request.onupgradeneeded = (event) => { 
+                    db = event.target.result; 
+                    if (!db.objectStoreNames.contains(STORE_NAME)) { 
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true }); 
+                        objectStore.createIndex("timestamp", "timestamp", { unique: false }); 
+                    } 
+                };
+                request.onsuccess = (event) => { 
+                    db = event.target.result; 
+                    resolve(db); 
+                    loadModules(); 
+                    updateViewButtons(); 
+                };
+            });
+        };
+
+        const saveModuleToDB = (dataObj) => { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], "readwrite"); const store = transaction.objectStore(STORE_NAME); const request = store.add(dataObj); request.onsuccess = () => resolve(request.result); request.onerror = () => reject("Error adding module"); }); };
+        const updateModuleInDB = (dataObj) => { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], "readwrite"); const store = transaction.objectStore(STORE_NAME); const request = store.put(dataObj); request.onsuccess = () => resolve(request.result); request.onerror = () => reject("Error updating module"); }); };
+        const getAllModules = () => { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], "readonly"); const store = transaction.objectStore(STORE_NAME); const request = store.getAll(); request.onsuccess = (event) => resolve(event.target.result); request.onerror = () => reject("Error fetching modules"); }); };
+        const deleteModuleFromDB = (id) => { return new Promise((resolve, reject) => { const transaction = db.transaction([STORE_NAME], "readwrite"); const store = transaction.objectStore(STORE_NAME); const request = store.delete(id); request.onsuccess = () => resolve(); request.onerror = () => reject("Error deleting module"); }); };
+
+        function getMimeFromExtension(ext) {
+            const map = {
+                pdf: 'application/pdf',
+                doc: 'application/msword',
+                docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ppt: 'application/vnd.ms-powerpoint',
+                pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                xls: 'application/vnd.ms-excel',
+                xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                mp4: 'video/mp4',
+                webm: 'video/webm',
+                mov: 'video/quicktime',
+                mkv: 'video/x-matroska',
+                avi: 'video/x-msvideo',
+                m4v: 'video/mp4',
+                mp3: 'audio/mpeg',
+                wav: 'audio/wav',
+                m4a: 'audio/mp4',
+                ogg: 'audio/ogg',
+                aac: 'audio/aac',
+                jpg: 'image/jpeg',
+                jpeg: 'image/jpeg',
+                png: 'image/png',
+                gif: 'image/gif',
+                webp: 'image/webp',
+                svg: 'image/svg+xml',
+                bmp: 'image/bmp',
+                txt: 'text/plain',
+                html: 'text/html',
+                htm: 'text/html',
+                json: 'application/json',
+                zip: 'application/zip'
+            };
+            return map[ext] || 'application/octet-stream';
+        }
+
+        function getModuleCategoryType(mod) {
+            const ext = (mod.fileExt || (mod.fileName ? mod.fileName.split('.').pop() : '')).toLowerCase();
+            if (['pdf'].includes(ext)) return 'pdf';
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
+            if (['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v'].includes(ext)) return 'video';
+            if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
+            if (['docx', 'doc'].includes(ext)) return 'word';
+            if (['pptx', 'ppt'].includes(ext)) return 'ppt';
+            if (['xlsx', 'xls', 'csv'].includes(ext)) return 'excel';
+            if (['txt', 'md', 'json', 'log'].includes(ext)) return 'text';
+            if (['html', 'htm'].includes(ext) || mod.htmlContent) return 'html';
+            return 'file';
+        }
+
+        function getFileBadgeInfo(mod) {
+            const type = getModuleCategoryType(mod);
+            const ext = (mod.fileExt || (mod.htmlContent ? 'html' : 'file')).toUpperCase();
+            const map = {
+                pdf: { icon: 'fa-solid fa-file-pdf', bg: 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800' },
+                image: { icon: 'fa-solid fa-file-image', bg: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800' },
+                video: { icon: 'fa-solid fa-file-video', bg: 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800' },
+                audio: { icon: 'fa-solid fa-file-audio', bg: 'bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-950/40 dark:text-pink-400 dark:border-pink-800' },
+                word: { icon: 'fa-solid fa-file-word', bg: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800' },
+                ppt: { icon: 'fa-solid fa-file-powerpoint', bg: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800' },
+                excel: { icon: 'fa-solid fa-file-excel', bg: 'bg-teal-50 text-teal-600 border-teal-200 dark:bg-teal-950/40 dark:text-teal-400 dark:border-teal-800' },
+                html: { icon: 'fa-solid fa-file-code', bg: 'bg-medical-50 text-medical-600 border-medical-200 dark:bg-blue-950/40 dark:text-medical-400 dark:border-blue-800' },
+                text: { icon: 'fa-solid fa-file-lines', bg: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700' },
+                file: { icon: 'fa-solid fa-file', bg: 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700' }
+            };
+            return { ...(map[type] || map.file), label: ext || 'FILE', type };
+        }
+
+        function formatBytes(bytes, decimals = 1) {
+            if (!bytes || bytes === 0) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function blobToDataUrl(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        function dataUrlToBlob(dataUrl) {
+            const arr = dataUrl.split(',');
+            const mimeMatch = arr[0].match(/:(.*?);/);
+            const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+
+        async function getModuleBlob(mod) {
+            if (!mod) return null;
+            if (mod.fileBlob instanceof Blob && mod.fileBlob.size > 0) return mod.fileBlob;
+            if (mod.fileBlob && typeof mod.fileBlob === 'object') {
+                try { return new Blob([mod.fileBlob], { type: mod.fileType || 'application/octet-stream' }); } catch (e) { console.warn(e); }
+            }
+            if (mod.fileDataUrl) return dataUrlToBlob(mod.fileDataUrl);
+            if (mod.htmlContent) return new Blob([mod.htmlContent], { type: 'text/html' });
+            return null;
+        }
+
+        async function initiateAppStartup() {
+            initTheme();
+            const devId = getDeviceId();
+            
+            if (localStorage.getItem('__ml_is_master_dev') === 'true') {
+                runSplashAndStart(); return;
+            }
+            const validKey = await generateLicenseHash(devId);
+            const storedKey = localStorage.getItem('__ml_license_key');
+            const VIP_BATCH_CODES = ["MED-VIP-ALPHA", "MED-VIP-BETA"];
+            
+            if (storedKey === validKey || VIP_BATCH_CODES.includes(storedKey)) {
+                runSplashAndStart();
+            } else {
+                document.getElementById('displayDeviceId').innerText = devId;
+                document.getElementById('devLockOverlay').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function runSplashAndStart() {
+            const splash = document.getElementById('appSplashScreen');
+            const main = document.getElementById('mainAppContent');
+            const bar = document.getElementById('splashProgress');
+            const text = document.getElementById('splashText');
+
+            splash.classList.remove('hidden'); 
+            initDB();
+
+            setTimeout(() => { bar.style.width = '30%'; text.innerText = "Memuat Database..."; }, 500); 
+            setTimeout(() => { bar.style.width = '60%'; text.innerText = "Menyiapkan Antarmuka..."; }, 1200);
+            setTimeout(() => { 
+                bar.style.width = '100%'; 
+                text.innerText = "Selesai!"; 
+                
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    main.classList.remove('hidden');
+                    
+                    document.getElementById('welcomeOverlay').classList.remove('hidden');
+                    
+                    document.getElementById('checkTerms').checked = false;
+                    const btnStart = document.getElementById('btnStartApp');
+                    btnStart.disabled = true;
+                    btnStart.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                    btnStart.classList.remove('bg-medical-600', 'text-white', 'shadow-lg');
+
+                    setTimeout(() => {
+                        main.classList.remove('opacity-0');
+                        document.body.style.overflow = 'auto';
+                        splash.remove();
+                    }, 100);
+                }, 500);
+            }, 2500);
+        }
+
+        document.getElementById('checkTerms').addEventListener('change', function() {
+            const btn = document.getElementById('btnStartApp');
+            if (this.checked) { btn.removeAttribute('disabled'); btn.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed'); } 
+            else { btn.setAttribute('disabled', 'true'); btn.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed'); }
+        });
+
+        function finishOnboarding() {
+            if (typeof nw !== 'undefined') {
+                const win = nw.Window.get();
+                win.enterFullscreen();
+            } else {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
+            }
+
+            localStorage.setItem('ml_has_onboarded', 'true');
+            const overlay = document.getElementById('welcomeOverlay');
+            overlay.classList.add('animate-fade-out');
+            setTimeout(() => { overlay.classList.add('hidden'); }, 500);
+        }
+
+        function exitApp() {
+            if (confirm("Keluar dari aplikasi?")) {
+                if (typeof nw !== 'undefined') {
+                    nw.Window.get().close(true);
+                } else {
+                    window.close();
+                }
+            }
+        }
+
+        async function loadModules() { allModulesCache = await getAllModules(); renderContent(); }
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            if (mode === 'folders') { activeCategoryFilter = 'Semua'; resetCategoryTriggerUI(); }
+            updateViewButtons(); renderContent();
+        }
+
+        function updateViewButtons() {
+            ['folders', 'grid', 'list'].forEach(m => {
+                const btn = document.getElementById(m === 'folders' ? 'btnViewFolder' : m === 'grid' ? 'btnViewGrid' : 'btnViewList');
+                if (currentViewMode === m) btn.classList.add('active'); else btn.classList.remove('active');
+            });
+            const breadcrumb = document.getElementById('folderBreadcrumb');
+            const catContainer = document.getElementById('categoryFilterContainer');
+            const sortControl = document.getElementById('sortControl');
+            
+            if (currentViewMode === 'folders' && activeCategoryFilter === 'Semua') {
+                breadcrumb.classList.add('hidden'); catContainer.classList.add('hidden'); sortControl.classList.add('hidden');
+            } else if (activeCategoryFilter !== 'Semua') {
+                breadcrumb.classList.remove('hidden'); document.getElementById('currentFolderName').innerText = activeCategoryFilter;
+                catContainer.classList.remove('hidden'); sortControl.classList.remove('hidden');
+            } else {
+                breadcrumb.classList.add('hidden'); catContainer.classList.remove('hidden'); sortControl.classList.remove('hidden');
+            }
+        }
+
+        function enterFolder(categoryName) { activeCategoryFilter = categoryName; currentViewMode = 'grid'; updateCategoryTriggerUI(categoryName); updateViewButtons(); renderContent(); }
+
+        window.openCategoryModal = () => { renderCategoryPopup(); document.getElementById('categoryModal').classList.remove('hidden'); };
+        window.closeCategoryModal = () => document.getElementById('categoryModal').classList.add('hidden');
+
+        function renderCategoryPopup() {
+            const container = document.getElementById('categoryPopupGrid');
+            const uniqueCategories = [...new Set(allModulesCache.map(m => m.category).filter(Boolean))];
+            uniqueCategories.sort();
+            const categoriesToRender = ['Semua', ...uniqueCategories];
+            container.innerHTML = categoriesToRender.map(cat => {
+                const isActive = activeCategoryFilter === cat ? 'active' : '';
+                return `<button onclick="setFilter('${escapeHtml(cat)}')" class="cat-popup-btn px-4 py-2 rounded-full text-sm font-semibold border border-gray-200 dark:border-slate-600 transition-all active:scale-95 ${isActive} ${isActive ? '' : 'bg-gray-50 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-600'}">${escapeHtml(cat)}</button>`;
+            }).join('');
+        }
+
+        window.setFilter = (category) => { activeCategoryFilter = category; updateCategoryTriggerUI(category); closeCategoryModal(); renderContent(); };
+
+        function updateCategoryTriggerUI(category) {
+            const btnText = document.getElementById('categoryTriggerText');
+            const btn = document.getElementById('btnCategoryTrigger');
+            if (category === 'Semua') {
+                btnText.innerText = "Kategori";
+                btn.classList.remove('border-medical-500', 'text-medical-700', 'bg-medical-50');
+                btn.classList.add('border-gray-300', 'text-gray-700', 'bg-white');
+            } else {
+                btnText.innerText = category;
+                btn.classList.remove('border-gray-300', 'text-gray-700', 'bg-white');
+                btn.classList.add('border-medical-500', 'text-medical-700', 'bg-medical-50');
+            }
+        }
+        function resetCategoryTriggerUI() { updateCategoryTriggerUI('Semua'); }
+
+        const HISTORY_KEY = 'ml_user_history';
+        function getHistory() { const data = localStorage.getItem(HISTORY_KEY); return data ? JSON.parse(data) : []; }
+        function addToHistory(mod) {
+            let history = getHistory();
+            const newItem = { id: mod.id, title: mod.title, category: mod.category, fileExt: mod.fileExt || 'html', timestamp: new Date().toISOString() };
+            history.unshift(newItem);
+            if(history.length > 50) history = history.slice(0, 50);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+        window.openHistoryModal = () => { renderHistoryList(); document.getElementById('historyModal').classList.remove('hidden'); };
+        window.closeHistoryModal = () => document.getElementById('historyModal').classList.add('hidden');
+        function renderHistoryList() {
+            const history = getHistory();
+            const container = document.getElementById('historyList');
+            const emptyState = document.getElementById('emptyHistory');
+            if(history.length === 0) { container.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+            container.innerHTML = history.map((item, index) => {
+                const date = new Date(item.timestamp);
+                const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const badge = getFileBadgeInfo(item);
+                return `<div class="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-700 transition group">
+                    <div class="flex-1 min-w-0 pr-4 cursor-pointer" onclick="closeHistoryModal(); window.viewModule(${item.id})">
+                        <div class="flex items-center gap-2">
+                            <span class="${badge.bg} text-[10px] px-1.5 py-0.5 rounded font-bold border"><i class="${badge.icon} mr-1"></i>${badge.label}</span>
+                            <h4 class="text-sm font-semibold text-gray-800 dark:text-white truncate">${escapeHtml(item.title)}</h4>
+                        </div>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span class="bg-blue-50 text-blue-600 dark:bg-slate-600 dark:text-blue-300 px-1.5 py-0.5 rounded mr-1">${escapeHtml(item.category)}</span>${dateStr}, ${timeStr}</p>
+                    </div>
+                    <button onclick="deleteHistoryItem(${index})" class="text-gray-400 hover:text-red-500 transition p-2 rounded-full hover:bg-red-50 dark:hover:bg-slate-600"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`;
+            }).join('');
+        }
+        window.deleteHistoryItem = (index) => { let history = getHistory(); history.splice(index, 1); localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); renderHistoryList(); };
+        window.clearAllHistory = () => { if(confirm("Hapus semua riwayat belajar?")) { localStorage.removeItem(HISTORY_KEY); renderHistoryList(); } };
+
+        window.setSearch = (value) => { activeSearch = value.toLowerCase(); renderContent(); };
+        window.setSort = (val) => { activeSort = val; localStorage.setItem('ml_sort_pref', val); renderContent(); };
+        window.toggleFavorite = async (event, id) => {
+            event.stopPropagation(); event.preventDefault(); 
+            const mod = allModulesCache.find(m => m.id === id);
+            if(mod) {
+                mod.isFavorite = !mod.isFavorite;
+                try {
+                    const btn = event.currentTarget;
+                    const icon = btn.querySelector('i');
+                    if(mod.isFavorite) { icon.classList.remove('text-gray-300', 'fa-regular'); icon.classList.add('text-red-500', 'fa-solid'); } 
+                    else { icon.classList.remove('text-red-500', 'fa-solid'); icon.classList.add('text-gray-300', 'fa-regular'); }
+                    btn.classList.add('animate-heartbeat'); setTimeout(() => btn.classList.remove('animate-heartbeat'), 500);
+                    await updateModuleInDB(mod); loadModules();
+                } catch (e) { console.error("Failed to toggle favorite", e); }
+            }
+        };
+
+        function renderContent() {
+            const container = document.getElementById('mainContentArea');
+            const emptyState = document.getElementById('emptyState');
+            container.innerHTML = '';
+            let filtered = [...allModulesCache];
+            if (activeCategoryFilter !== 'Semua') { filtered = filtered.filter(mod => mod.category === activeCategoryFilter); }
+            if (activeSearch) { filtered = filtered.filter(mod => mod.title.toLowerCase().includes(activeSearch) || mod.category.toLowerCase().includes(activeSearch)); }
+            if (filtered.length === 0 && currentViewMode !== 'folders') { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; } 
+            else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); }
+
+            filtered.sort((a, b) => {
+                if (activeSort === 'favorites') { if (a.isFavorite === b.isFavorite) return new Date(b.timestamp) - new Date(a.timestamp); return a.isFavorite ? -1 : 1; }
+                if (activeSort === 'newest') return new Date(b.timestamp) - new Date(a.timestamp);
+                if (activeSort === 'oldest') return new Date(a.timestamp) - new Date(b.timestamp);
+                if (activeSort === 'az') return a.title.localeCompare(b.title);
+            });
+
+            if (currentViewMode === 'folders' && activeCategoryFilter === 'Semua') {
+                const categories = [...new Set(allModulesCache.map(m => m.category))];
+                if (categories.length === 0) { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; }
+                const gridDiv = document.createElement('div');
+                gridDiv.className = "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4";
+                categories.sort().forEach(cat => {
+                    const count = allModulesCache.filter(m => m.category === cat).length;
+                    gridDiv.innerHTML += `<div onclick="enterFolder('${escapeHtml(cat)}')" class="folder-card bg-white dark:bg-dark-card p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm hover:shadow-md cursor-pointer flex flex-col items-center justify-center text-center h-32 md:h-40 group"><i class="fa-solid fa-folder text-4xl md:text-5xl text-medical-600 mb-3 group-hover:text-medical-800 dark:group-hover:text-medical-500 transition-colors drop-shadow-sm"></i><h3 class="font-bold text-gray-700 dark:text-gray-200 text-sm line-clamp-1 w-full px-2">${escapeHtml(cat)}</h3><span class="text-[10px] text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded-full mt-1">${count} file</span></div>`;
+                });
+                container.appendChild(gridDiv);
+            } else if (currentViewMode === 'list') {
+                const listDiv = document.createElement('div');
+                listDiv.className = "flex flex-col gap-2";
+                filtered.forEach(mod => {
+                    const date = new Date(mod.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                    const favClass = mod.isFavorite ? "text-red-500 fa-solid" : "text-gray-300 fa-regular hover:text-red-400";
+                    const badge = getFileBadgeInfo(mod);
+                    const sizeStr = mod.fileSize ? formatBytes(mod.fileSize) : '';
+                    listDiv.innerHTML += `<div class="list-row bg-white dark:bg-dark-card p-3 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm flex items-center justify-between group cursor-pointer" onclick="window.viewModule(${mod.id})">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-10 h-10 ${badge.bg} rounded flex items-center justify-center flex-shrink-0 text-base border">
+                                <i class="${badge.icon}"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate pr-2">${escapeHtml(mod.title)}</h3>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                    <span class="text-medical-500 font-semibold">${escapeHtml(mod.category)}</span>
+                                    <span>• ${date}</span>
+                                    ${sizeStr ? `<span class="font-mono text-gray-400">(${sizeStr})</span>` : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 pl-2">
+                            <button type="button" onclick="window.toggleFavorite(event, ${mod.id})" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-slate-700 transition-all relative z-50 ${favClass.includes('solid') ? 'bg-red-50 dark:bg-slate-800' : ''}"><i class="${favClass} fa-heart text-sm"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.openEditModal(${mod.id}, '${escapeHtml(mod.title)}')" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-medical-600 hover:bg-medical-50 dark:hover:bg-slate-700 rounded-full transition-all relative z-50"><i class="fa-solid fa-pencil text-sm"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); window.confirmDelete(${mod.id})" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-slate-700 rounded-full transition-all relative z-50"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                        </div>
+                    </div>`;
+                });
+                container.appendChild(listDiv);
+            } else {
+                const gridDiv = document.createElement('div');
+                gridDiv.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6";
+                filtered.forEach(mod => {
+                    const date = new Date(mod.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const favClass = mod.isFavorite ? "text-red-500 fa-solid" : "text-gray-300 fa-regular";
+                    const badge = getFileBadgeInfo(mod);
+                    const sizeStr = mod.fileSize ? formatBytes(mod.fileSize) : '';
+                    gridDiv.innerHTML += `<div class="bg-white dark:bg-dark-card rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all flex flex-col overflow-hidden group relative active:scale-[0.99] touch-manipulation">
+                        <div class="p-5 flex-1 relative">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-medical-50 text-medical-700 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border border-medical-200 dark:bg-slate-800 dark:text-medical-400 dark:border-slate-600 flex items-center gap-1">
+                                    <i class="fa-regular fa-folder-open"></i> ${escapeHtml(mod.category)}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="${badge.bg} text-[10px] font-bold px-2 py-0.5 rounded border uppercase"><i class="${badge.icon} mr-1"></i>${badge.label}</span>
+                                    <button type="button" onclick="window.toggleFavorite(event, ${mod.id})" class="z-20 hover:scale-110 transition-transform relative cursor-pointer p-1"><i class="${favClass} fa-heart text-lg drop-shadow-sm"></i></button>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-gray-800 dark:text-white text-base leading-snug mb-1 line-clamp-2 group-hover:text-medical-600 dark:group-hover:text-medical-400 transition-colors">${escapeHtml(mod.title)}</h3>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5 font-mono mb-2">
+                                <i class="fa-regular fa-calendar"></i> ${date}
+                                ${sizeStr ? `<span>• ${sizeStr}</span>` : ''}
+                            </p>
+                            <div class="absolute top-12 right-4 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 z-10 transition-all">
+                                <button onclick="window.openEditModal(${mod.id}, '${escapeHtml(mod.title)}')" class="text-gray-400 hover:text-medical-600 hover:bg-medical-50 dark:hover:bg-slate-700 p-2 rounded-full transition-all bg-white/90 dark:bg-slate-800/90 shadow-sm"><i class="fa-solid fa-pencil text-xs"></i></button>
+                                <button onclick="window.confirmDelete(${mod.id})" class="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-slate-700 p-2 rounded-full transition-all bg-white/90 dark:bg-slate-800/90 shadow-sm"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div class="px-5 py-3.5 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 mt-auto">
+                            <button onclick="window.viewModule(${mod.id})" class="w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-slate-600 text-medical-600 dark:text-medical-400 hover:bg-medical-600 hover:text-white dark:hover:text-white font-bold py-2 px-3 rounded-lg text-xs transition shadow-sm flex items-center justify-center gap-2 group-hover:border-medical-600">
+                                <span>Buka ${badge.label}</span> <i class="fa-solid fa-arrow-right text-xs opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                });
+                container.appendChild(gridDiv);
+            }
+        }
+
+        window.openSettingsModal = () => document.getElementById('settingsModal').classList.remove('hidden');
+        window.closeSettingsModal = () => document.getElementById('settingsModal').classList.add('hidden');
+        
+        window.backupData = async () => {
+            const btn = document.getElementById('btnStartBackup'); const originalText = btn.innerHTML;
+            try {
+                btn.disabled = true; btn.innerHTML = `<i class="loader w-4 h-4 border-white border-t-transparent inline-block mr-2"></i> Memproses Data...`;
+                const data = await getAllModules();
+                if(!data || data.length === 0) { 
+                    alert("Belum ada data modul untuk dibackup!"); 
+                    btn.disabled = false; btn.innerHTML = originalText; return; 
+                }
+                
+                const serializableData = await Promise.all(data.map(async item => {
+                    const copy = { ...item };
+                    if (copy.fileBlob instanceof Blob) {
+                        copy.fileDataUrl = await blobToDataUrl(copy.fileBlob);
+                        delete copy.fileBlob;
+                    }
+                    return copy;
+                }));
+
+                const blob = new Blob([JSON.stringify(serializableData)], {type: "application/json"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `MediLearn_Backup_AllFiles_${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> Selesai!`; setTimeout(() => btn.innerHTML = originalText, 2000); }, 1000);
+            } catch (e) { alert("Gagal membuat backup: " + e.message); console.error(e); btn.disabled = false; btn.innerHTML = originalText; }
+        };
+
+        window.restoreData = async (input) => {
+            const file = input.files[0]; if(!file) return;
+            if(!confirm("⚠️ PERHATIAN: Restore akan menambahkan modul dari file backup ke perpustakaan Anda. Lanjutkan?")) { input.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if(!Array.isArray(importedData)) throw new Error("Format file tidak valid (Bukan Array)");
+                    let count = 0;
+                    for(const item of importedData) { 
+                        try { 
+                            if(!item.title) continue; 
+                            delete item.id; 
+                            if(item.fileDataUrl) {
+                                item.fileBlob = dataUrlToBlob(item.fileDataUrl);
+                                delete item.fileDataUrl;
+                            }
+                            await saveModuleToDB(item); 
+                            count++; 
+                        } catch(dbErr) { console.error("Gagal simpan item", dbErr); } 
+                    }
+                    alert(`✅ Berhasil memulihkan ${count} modul!`); loadModules(); closeSettingsModal();
+                } catch (err) { alert("❌ Gagal Restore: File backup rusak atau tidak valid."); console.error(err); }
+                input.value = ''; 
+            };
+            reader.readAsText(file);
+        };
+
+        function renderCategoryInputs() {
+            const container = document.getElementById('categoryInputs');
+            const existingCats = [...new Set(allModulesCache.map(m => m.category).filter(Boolean))];
+            const standards = ['Teori', 'Klinis', 'CBT', 'Jurnal', 'Anatomi'];
+            const merged = [...new Set([...standards, ...existingCats])].sort();
+            container.innerHTML = merged.map(cat => `<button type="button" onclick="selectCategory('${escapeHtml(cat)}')" class="cat-chip px-3 py-1.5 text-xs border bg-gray-50 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 rounded-lg hover:bg-medical-100 hover:border-medical-300 dark:hover:bg-slate-600 transition truncate max-w-[120px] mb-1 mr-1">${escapeHtml(cat)}</button>`).join('');
+        }
+        window.selectCategory = (cat) => { selectedCategoryForUpload = cat; document.getElementById('selectedCategory').value = cat; document.getElementById('selectedCategoryDisplay').innerHTML = `Folder Dipilih: <span class="text-medical-700 dark:text-medical-400 font-bold bg-medical-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-medical-200 dark:border-slate-700"><i class="fa-regular fa-folder-open"></i> ${escapeHtml(cat)}</span>`; };
+        window.addNewFolder = () => { const input = document.getElementById('newFolderInput'); const name = input.value.trim(); if(name) { selectCategory(name); input.value = ''; } };
+        
+        window.updateFileDisplay = (input) => {
+            const display = document.getElementById('fileNameDisplay'); const files = input.files; const titleGroup = document.getElementById('singleTitleGroup'); const titleInput = document.getElementById('inputTitle');
+            if (files && files.length > 0) {
+                if (files.length === 1) { 
+                    const f = files[0];
+                    display.innerHTML = `<span class="font-bold text-medical-600 block truncate">${f.name}</span><span class="text-xs text-gray-400 font-mono">${formatBytes(f.size)}</span>`; 
+                    titleGroup.classList.remove('hidden'); 
+                    if(!titleInput.value) { titleInput.value = f.name.replace(/\.[^/.]+$/, ""); }
+                } else { 
+                    display.innerHTML = `<span class="font-bold text-medical-600 block">${files.length} File Dipilih</span><span class="text-xs text-gray-500">Judul otomatis disesuaikan dari nama file.</span>`; 
+                    titleGroup.classList.add('hidden'); 
+                }
+                document.getElementById('uploadIconContainer').innerHTML = `<i class="fa-solid fa-file-circle-check text-green-500 text-3xl mb-2"></i>`;
+            }
+        };
+
+        const dropZone = document.getElementById('uploadDropZone');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    dropZone.classList.add('border-medical-500', 'bg-medical-50/70', 'dark:bg-slate-700');
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    dropZone.classList.remove('border-medical-500', 'bg-medical-50/70', 'dark:bg-slate-700');
+                }, false);
+            });
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    document.getElementById('inputFile').files = dt.files;
+                    updateFileDisplay(document.getElementById('inputFile'));
+                }
+            }, false);
+        }
+
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const category = selectedCategoryForUpload || document.getElementById('newFolderInput').value.trim(); 
+            if (!category) return showStatus('Pilih atau buat folder terlebih dahulu!', 'error');
+            const files = document.getElementById('inputFile').files; 
+            if (!files || files.length === 0) return showStatus('Pilih minimal satu file.', 'error');
+            
+            setLoading(true); 
+            let successCount = 0;
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const ext = file.name.includes('.') ? file.name.split('.').pop().toLowerCase() : '';
+                    const baseName = file.name.replace(/\.[^/.]+$/, "");
+                    const title = (files.length === 1) ? document.getElementById('inputTitle').value.trim() || baseName : baseName.replace(/[_-]/g, ' ');
+                    const fileType = file.type || getMimeFromExtension(ext);
+                    let htmlContent = null;
+
+                    if (ext === 'html' || ext === 'htm' || fileType === 'text/html') {
+                        htmlContent = await file.text();
+                    }
+
+                    const arrayBuffer = await file.arrayBuffer();
+                    const cleanBlob = new Blob([arrayBuffer], { type: fileType });
+
+                    await saveModuleToDB({ 
+                        title: title, 
+                        category: category, 
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: fileType,
+                        fileExt: ext,
+                        fileBlob: cleanBlob,
+                        htmlContent: htmlContent, 
+                        timestamp: new Date().toISOString(), 
+                        isFavorite: false 
+                    });
+                    successCount++;
+                }
+                showStatus(`Berhasil menyimpan ${successCount} file ke folder "${category}"!`, 'success');
+                setTimeout(() => { 
+                    uploadForm.reset(); 
+                    selectedCategoryForUpload = ''; 
+                    document.getElementById('selectedCategoryDisplay').innerHTML = `Folder Dipilih: <span class="text-gray-500 italic">- Belum dipilih -</span>`; 
+                    document.getElementById('fileNameDisplay').innerText = 'Klik atau Tarik File ke Sini'; 
+                    document.getElementById('singleTitleGroup').classList.remove('hidden'); 
+                    document.getElementById('uploadIconContainer').innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-medical-600 text-3xl mb-2"></i>`; 
+                    loadModules(); 
+                    closeUploadModal(); 
+                }, 1200);
+            } catch (err) { 
+                console.error(err); 
+                showStatus('Terjadi kesalahan saat upload: ' + err.message, 'error'); 
+            } finally { 
+                setLoading(false); 
+            }
+        });
+
+        window.viewModule = async (id) => {
+            const mod = allModulesCache.find(m => m.id === id); 
+            if (!mod) return;
+            addToHistory(mod);
+            currentViewingModule = mod;
+
+            const modal = document.getElementById('viewerModal'); 
+            const iframe = document.getElementById('moduleIframe'); 
+            const dynamicContainer = document.getElementById('dynamicMediaContainer');
+            const loader = document.getElementById('viewerLoader');
+            const headerIcon = document.getElementById('viewerHeaderIcon');
+
+            document.getElementById('modalTitle').innerText = mod.title; 
+            document.getElementById('modalCategory').innerText = mod.category;
+            document.getElementById('modalFileSize').innerText = mod.fileSize ? formatBytes(mod.fileSize) : '';
+
+            if (currentActiveBlobUrl) {
+                URL.revokeObjectURL(currentActiveBlobUrl);
+                currentActiveBlobUrl = null;
+            }
+
+            iframe.src = 'about:blank'; 
+            iframe.classList.add('hidden');
+            dynamicContainer.innerHTML = '';
+            dynamicContainer.classList.add('hidden');
+
+            modal.classList.remove('hidden'); 
+            loader.classList.remove('hidden'); 
+
+            const badge = getFileBadgeInfo(mod);
+            headerIcon.className = `w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${badge.bg}`;
+            headerIcon.innerHTML = `<i class="${badge.icon}"></i>`;
+
+            const type = getModuleCategoryType(mod);
+            const blob = await getModuleBlob(mod);
+
+            try {
+                if (!blob && type !== 'html') {
+                    throw new Error("File tidak ditemukan dalam penyimpanan browser.");
+                }
+
+                // 1. PDF DOCUMENT READER (With Page & Continuous Scroll Mode)
+                if (type === 'pdf') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderPdfReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 2. WORD DOCUMENT READER (DOCX)
+                if (type === 'word') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderDocxReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 3. POWERPOINT SLIDE READER (PPTX With Slide & Continuous Scroll Mode)
+                if (type === 'ppt') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderPptxReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 4. EXCEL SPREADSHEET READER (XLSX / XLS / CSV)
+                if (type === 'excel') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderExcelReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 5. IMAGE VIEWER
+                if (type === 'image') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderImageReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 6. VIDEO PLAYER
+                if (type === 'video') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderVideoReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 7. AUDIO PLAYER
+                if (type === 'audio') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderAudioReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 8. TEXT / MARKDOWN READER
+                if (type === 'text') {
+                    dynamicContainer.classList.remove('hidden');
+                    await renderTextReader(blob, mod);
+                    loader.classList.add('hidden');
+                    return;
+                }
+
+                // 9. NATIVE HTML MODULE
+                if (type === 'html') {
+                    iframe.classList.remove('hidden');
+                    let content = mod.htmlContent;
+                    if (!content && blob) content = await blob.text();
+                    if (!content) content = '<h3>Modul HTML kosong.</h3>';
+                    content += `<style>body{cursor:default;user-select:none;-webkit-user-select:none;}html{scroll-behavior:smooth;}</style><script>document.addEventListener('contextmenu',e=>e.preventDefault());<\/script>`;
+                    const htmlBlob = new Blob([content], { type: 'text/html' });
+                    currentActiveBlobUrl = URL.createObjectURL(htmlBlob);
+                    iframe.src = currentActiveBlobUrl;
+                    iframe.onload = () => { setTimeout(() => loader.classList.add('hidden'), 250); };
+                    return;
+                }
+
+                dynamicContainer.classList.remove('hidden');
+                renderUniversalFileCard(mod, blob, 'Berkas Digital', 'fa-file', 'text-medical-600', 'bg-medical-50');
+                loader.classList.add('hidden');
+            } catch (viewerErr) {
+                console.error("Viewer error:", viewerErr);
+                dynamicContainer.classList.remove('hidden');
+                renderUniversalFileCard(mod, blob, 'Berkas Digital', 'fa-file', 'text-medical-600', 'bg-medical-50', `Terjadi kendala saat membaca file: ${viewerErr.message}`);
+                loader.classList.add('hidden');
+            }
+        };
+
+        async function renderPdfReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const arrayBuffer = await blob.arrayBuffer();
+            
+            pdfState.doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            pdfState.pageNum = 1;
+            pdfState.totalPages = pdfState.doc.numPages;
+            pdfState.scale = (window.innerWidth < 640) ? 0.95 : 1.15;
+            pdfState.viewMode = 'page';
+            pdfState.renderedPages.clear();
+            if (pdfState.observer) {
+                pdfState.observer.disconnect();
+                pdfState.observer = null;
+            }
+
+            container.innerHTML = `
+            <div class="flex flex-col h-full w-full bg-slate-900 select-none overflow-hidden">
+                <div class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-3 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0 z-10 shadow-sm">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                        <!-- Mode Switcher: Per Halaman vs Scroll Bawah -->
+                        <div class="flex items-center bg-gray-100 dark:bg-slate-700/80 p-0.5 rounded-lg border border-gray-200 dark:border-slate-600">
+                            <button id="btnPdfModePage" onclick="switchPdfViewMode('page')" class="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-medical-600 text-white shadow-sm" title="Tampilan Per Halaman">
+                                <i class="fa-regular fa-file"></i> <span class="hidden sm:inline">Per Halaman</span>
+                            </button>
+                            <button id="btnPdfModeScroll" onclick="switchPdfViewMode('scroll')" class="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:text-medical-600" title="Tampilan Gulir Scroll ke Bawah">
+                                <i class="fa-solid fa-arrows-up-down"></i> <span class="hidden sm:inline">Scroll Bawah</span>
+                            </button>
+                        </div>
+
+                        <!-- Page Navigators -->
+                        <div class="flex items-center gap-1 sm:gap-1.5 ml-1">
+                            <button onclick="changePdfPage(-1)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs transition active:scale-95" title="Halaman Sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+                            <div class="flex items-center gap-1 text-xs font-bold text-gray-700 dark:text-gray-200">
+                                <span>Hal</span>
+                                <input id="pdfPageInput" type="number" min="1" max="${pdfState.totalPages}" value="${pdfState.pageNum}" onchange="jumpPdfPage(this.value)" class="w-12 text-center py-1 bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded text-xs font-bold focus:outline-none focus:ring-1 focus:ring-medical-500">
+                                <span>/ <span id="pdfTotalPages">${pdfState.totalPages}</span></span>
+                            </div>
+                            <button onclick="changePdfPage(1)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 flex items-center justify-center font-bold text-xs transition active:scale-95" title="Halaman Berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Zoom & Actions -->
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <button onclick="zoomPdf(-0.15)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 flex items-center justify-center text-xs transition" title="Perkecil"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <span id="pdfZoomLabel" class="text-xs font-bold font-mono px-1.5 text-gray-600 dark:text-gray-300 min-w-[45px] text-center">${Math.round(pdfState.scale * 100)}%</span>
+                        <button onclick="zoomPdf(0.15)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 flex items-center justify-center text-xs transition" title="Perbesar"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button onclick="fitPdfWidth()" class="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 text-xs font-bold hidden sm:flex items-center gap-1" title="Paskan Lebar Layar"><i class="fa-solid fa-arrows-left-right-to-line"></i> Paskan</button>
+                        <button onclick="downloadCurrentViewerFile()" class="w-8 h-8 rounded-lg bg-medical-50 text-medical-600 dark:bg-slate-700 dark:text-medical-400 flex items-center justify-center text-xs transition" title="Unduh File PDF"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <!-- Viewport Container -->
+                <div id="pdfScrollContainer" class="flex-1 overflow-auto p-4 flex flex-col items-center bg-slate-900/95 relative scroll-smooth">
+                    <!-- Single Page Mode Canvas -->
+                    <div id="pdfSinglePageWrapper" class="flex flex-col items-center justify-center w-full">
+                        <canvas id="pdfCanvas" class="shadow-2xl rounded-sm max-w-full bg-white transition-opacity duration-200"></canvas>
+                    </div>
+
+                    <!-- Continuous Scroll Mode Container -->
+                    <div id="pdfContinuousContainer" class="hidden flex-col items-center w-full max-w-4xl py-2"></div>
+                </div>
+            </div>`;
+
+            setupPdfSwipeGesture();
+            await renderPdfCurrentPage();
+        }
+
+        async function renderPdfCurrentPage() {
+            if (!pdfState.doc || pdfState.rendering) return;
+            pdfState.rendering = true;
+
+            const page = await pdfState.doc.getPage(pdfState.pageNum);
+            const canvas = document.getElementById('pdfCanvas');
+            if (!canvas) { pdfState.rendering = false; return; }
+
+            const ctx = canvas.getContext('2d');
+            const viewport = page.getViewport({ scale: pdfState.scale });
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.width = Math.floor(viewport.width * dpr);
+            canvas.height = Math.floor(viewport.height * dpr);
+            canvas.style.width = Math.floor(viewport.width) + 'px';
+            canvas.style.height = Math.floor(viewport.height) + 'px';
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            const renderContext = { canvasContext: ctx, viewport: viewport };
+            await page.render(renderContext).promise;
+
+            const input = document.getElementById('pdfPageInput');
+            if (input && document.activeElement !== input) input.value = pdfState.pageNum;
+            const zoomLabel = document.getElementById('pdfZoomLabel');
+            if (zoomLabel) zoomLabel.innerText = Math.round(pdfState.scale * 100) + '%';
+
+            pdfState.rendering = false;
+        }
+
+        async function renderPdfPageNumber(pageNum) {
+            if (!pdfState.doc || pdfState.renderedPages.has(pageNum)) return;
+            pdfState.renderedPages.add(pageNum);
+            try {
+                const page = await pdfState.doc.getPage(pageNum);
+                const canvas = document.getElementById(`pdfCanvas_${pageNum}`);
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: pdfState.scale });
+                const dpr = window.devicePixelRatio || 1;
+
+                canvas.width = Math.floor(viewport.width * dpr);
+                canvas.height = Math.floor(viewport.height * dpr);
+                canvas.style.width = Math.floor(viewport.width) + 'px';
+                canvas.style.height = Math.floor(viewport.height) + 'px';
+
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                const renderContext = { canvasContext: ctx, viewport: viewport };
+                await page.render(renderContext).promise;
+            } catch (err) {
+                console.warn(`Gagal render halaman ${pageNum}:`, err);
+                pdfState.renderedPages.delete(pageNum);
+            }
+        }
+
+        window.switchPdfViewMode = async function(mode) {
+            if (pdfState.viewMode === mode) return;
+            pdfState.viewMode = mode;
+
+            const btnPage = document.getElementById('btnPdfModePage');
+            const btnScroll = document.getElementById('btnPdfModeScroll');
+            const singleWrapper = document.getElementById('pdfSinglePageWrapper');
+            const continuousWrapper = document.getElementById('pdfContinuousContainer');
+            const scrollBox = document.getElementById('pdfScrollContainer');
+
+            if (mode === 'page') {
+                btnPage.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-medical-600 text-white shadow-sm';
+                btnScroll.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:text-medical-600';
+                
+                if (pdfState.observer) {
+                    pdfState.observer.disconnect();
+                    pdfState.observer = null;
+                }
+                continuousWrapper.classList.add('hidden');
+                continuousWrapper.innerHTML = '';
+                singleWrapper.classList.remove('hidden');
+
+                if (scrollBox) scrollBox.scrollTop = 0;
+                await renderPdfCurrentPage();
+            } else {
+                btnScroll.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-medical-600 text-white shadow-sm';
+                btnPage.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:text-medical-600';
+
+                singleWrapper.classList.add('hidden');
+                continuousWrapper.classList.remove('hidden');
+                continuousWrapper.innerHTML = '';
+                pdfState.renderedPages.clear();
+
+                let html = '';
+                for (let i = 1; i <= pdfState.totalPages; i++) {
+                    html += `
+                    <div id="pdfPageWrapper_${i}" class="pdf-page-wrapper w-full flex flex-col items-center mb-6" data-page="${i}">
+                        <div class="text-[11px] font-mono font-semibold text-gray-400 mb-2 select-none flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-medical-500"></span> Halaman ${i} dari ${pdfState.totalPages}
+                        </div>
+                        <div class="shadow-2xl rounded-sm bg-white overflow-hidden max-w-full flex justify-center items-center min-h-[300px]">
+                            <canvas id="pdfCanvas_${i}" class="max-w-full block"></canvas>
+                        </div>
+                    </div>`;
+                }
+                continuousWrapper.innerHTML = html;
+
+                setupPdfContinuousObserver();
+
+                setTimeout(() => {
+                    const targetEl = document.getElementById(`pdfPageWrapper_${pdfState.pageNum}`);
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        };
+
+        function setupPdfContinuousObserver() {
+            if (pdfState.observer) pdfState.observer.disconnect();
+            const container = document.getElementById('pdfScrollContainer');
+            if (!container) return;
+
+            pdfState.observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const pageNum = parseInt(entry.target.getAttribute('data-page'), 10);
+                    if (entry.isIntersecting) {
+                        renderPdfPageNumber(pageNum);
+                        if (entry.intersectionRatio > 0.4) {
+                            pdfState.pageNum = pageNum;
+                            const input = document.getElementById('pdfPageInput');
+                            if (input && document.activeElement !== input) input.value = pageNum;
+                        }
+                    }
+                });
+            }, {
+                root: container,
+                rootMargin: '300px 0px 300px 0px',
+                threshold: [0, 0.4, 0.8]
+            });
+
+            document.querySelectorAll('.pdf-page-wrapper').forEach(wrapper => {
+                pdfState.observer.observe(wrapper);
+            });
+        }
+
+        window.changePdfPage = async function(delta) {
+            if (!pdfState.doc) return;
+            const target = pdfState.pageNum + delta;
+            if (target >= 1 && target <= pdfState.totalPages) {
+                pdfState.pageNum = target;
+                if (pdfState.viewMode === 'scroll') {
+                    const targetEl = document.getElementById(`pdfPageWrapper_${target}`);
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const input = document.getElementById('pdfPageInput');
+                    if (input) input.value = target;
+                } else {
+                    await renderPdfCurrentPage();
+                    const scrollBox = document.getElementById('pdfScrollContainer');
+                    if (scrollBox) scrollBox.scrollTop = 0;
+                }
+            }
+        };
+
+        window.jumpPdfPage = async function(val) {
+            if (!pdfState.doc) return;
+            const p = parseInt(val);
+            if (!isNaN(p) && p >= 1 && p <= pdfState.totalPages) {
+                pdfState.pageNum = p;
+                if (pdfState.viewMode === 'scroll') {
+                    const targetEl = document.getElementById(`pdfPageWrapper_${p}`);
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    await renderPdfCurrentPage();
+                }
+            }
+        };
+
+        window.zoomPdf = async function(delta) {
+            if (!pdfState.doc) return;
+            const newScale = Math.min(Math.max(pdfState.scale + delta, 0.4), 3.0);
+            pdfState.scale = newScale;
+            const zoomLabel = document.getElementById('pdfZoomLabel');
+            if (zoomLabel) zoomLabel.innerText = Math.round(pdfState.scale * 100) + '%';
+
+            if (pdfState.viewMode === 'scroll') {
+                pdfState.renderedPages.clear();
+                document.querySelectorAll('.pdf-page-wrapper').forEach(wrapper => {
+                    const num = parseInt(wrapper.getAttribute('data-page'), 10);
+                    const canvas = document.getElementById(`pdfCanvas_${num}`);
+                    if (canvas) { canvas.width = 0; canvas.height = 0; }
+                });
+                setupPdfContinuousObserver();
+            } else {
+                await renderPdfCurrentPage();
+            }
+        };
+
+        window.fitPdfWidth = async function() {
+            if (!pdfState.doc) return;
+            const scrollBox = document.getElementById('pdfScrollContainer');
+            if (!scrollBox) return;
+            const page = await pdfState.doc.getPage(pdfState.pageNum);
+            const defaultViewport = page.getViewport({ scale: 1.0 });
+            const containerWidth = scrollBox.clientWidth - 48;
+            pdfState.scale = Math.max(containerWidth / defaultViewport.width, 0.4);
+            
+            const zoomLabel = document.getElementById('pdfZoomLabel');
+            if (zoomLabel) zoomLabel.innerText = Math.round(pdfState.scale * 100) + '%';
+
+            if (pdfState.viewMode === 'scroll') {
+                pdfState.renderedPages.clear();
+                setupPdfContinuousObserver();
+            } else {
+                await renderPdfCurrentPage();
+            }
+        };
+
+        function setupPdfSwipeGesture() {
+            const container = document.getElementById('pdfScrollContainer');
+            if (!container) return;
+            let startX = 0, startY = 0;
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+            container.addEventListener('touchend', (e) => {
+                if (pdfState.viewMode === 'page' && e.changedTouches.length === 1) {
+                    const diffX = e.changedTouches[0].clientX - startX;
+                    const diffY = e.changedTouches[0].clientY - startY;
+                    if (Math.abs(diffX) > 60 && Math.abs(diffY) < 50) {
+                        if (diffX < 0) changePdfPage(1);
+                        else changePdfPage(-1);
+                    }
+                }
+            }, { passive: true });
+        }
+
+        async function renderDocxReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const arrayBuffer = await blob.arrayBuffer();
+            docxState.fontSize = 16;
+
+            const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+            const htmlContent = result.value || '<p class="text-gray-400 italic">Dokumen Word tidak memiliki teks terbaca.</p>';
+
+            container.innerHTML = `
+            <div class="flex-1 overflow-y-auto bg-gray-100 dark:bg-slate-900 p-3 sm:p-6 flex flex-col items-center">
+                <div class="w-full max-w-4xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3 sticky top-0 z-10 backdrop-blur-md">
+                    <div class="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-white truncate">
+                        <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold">DOCX</span>
+                        <span class="truncate max-w-[180px] sm:max-w-sm">${escapeHtml(mod.title)}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-gray-100 dark:bg-slate-700 rounded-lg p-0.5 text-xs font-bold">
+                            <button onclick="changeDocxFontSize(-1)" class="px-2.5 py-1 hover:bg-white dark:hover:bg-slate-600 rounded text-gray-600 dark:text-gray-300 transition" title="Kecilkan Teks">A-</button>
+                            <button onclick="changeDocxFontSize(1)" class="px-2.5 py-1 hover:bg-white dark:hover:bg-slate-600 rounded text-gray-600 dark:text-gray-300 transition" title="Besarkan Teks">A+</button>
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-download"></i> Unduh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="docxContentBody" class="w-full max-w-4xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6 sm:p-12 docx-rendered-content leading-relaxed transition-all text-base" style="font-size: 16px;">
+                    ${htmlContent}
+                </div>
+            </div>`;
+        }
+
+        window.changeDocxFontSize = function(delta) {
+            const body = document.getElementById('docxContentBody');
+            if (!body) return;
+            docxState.fontSize = Math.min(Math.max(docxState.fontSize + (delta * 2), 12), 26);
+            body.style.fontSize = docxState.fontSize + 'px';
+        };
+
+        async function renderPptxReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const arrayBuffer = await blob.arrayBuffer();
+
+            pptxState.slides = [];
+            pptxState.currentIndex = 0;
+            pptxState.title = mod.title;
+            pptxState.viewMode = 'slide';
+
+            try {
+                const zip = await JSZip.loadAsync(arrayBuffer);
+                const slideFiles = Object.keys(zip.files).filter(k => /^ppt\/slides\/slide\d+\.xml$/i.test(k));
+                
+                slideFiles.sort((a, b) => {
+                    const numA = parseInt(a.match(/slide(\d+)\.xml/i)[1], 10);
+                    const numB = parseInt(b.match(/slide(\d+)\.xml/i)[1], 10);
+                    return numA - numB;
+                });
+
+                if (slideFiles.length === 0) {
+                    throw new Error("Format slide tidak dapat di-parse otomatis.");
+                }
+
+                for (let i = 0; i < slideFiles.length; i++) {
+                    const filePath = slideFiles[i];
+                    const xmlText = await zip.file(filePath).async('string');
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                    const textNodes = xmlDoc.getElementsByTagName('a:t');
+                    const paragraphs = [];
+                    for (let j = 0; j < textNodes.length; j++) {
+                        const txt = textNodes[j].textContent.trim();
+                        if (txt) paragraphs.push(txt);
+                    }
+
+                    let slideTitle = `Slide ${i + 1}`;
+                    let bulletTexts = [];
+                    if (paragraphs.length > 0) {
+                        slideTitle = paragraphs[0];
+                        bulletTexts = paragraphs.slice(1);
+                    }
+
+                    const images = [];
+                    const relsPath = filePath.replace('ppt/slides/slide', 'ppt/slides/_rels/slide') + '.rels';
+                    if (zip.file(relsPath)) {
+                        const relsText = await zip.file(relsPath).async('string');
+                        const relsDoc = parser.parseFromString(relsText, 'text/xml');
+                        const relNodes = relsDoc.getElementsByTagName('Relationship');
+                        for (let r = 0; r < relNodes.length; r++) {
+                            const target = relNodes[r].getAttribute('Target') || '';
+                            if (target.includes('media/')) {
+                                const mediaFile = target.replace('../', 'ppt/');
+                                if (zip.file(mediaFile)) {
+                                    const base64Data = await zip.file(mediaFile).async('base64');
+                                    const ext = mediaFile.split('.').pop().toLowerCase();
+                                    images.push(`data:image/${ext};base64,${base64Data}`);
+                                }
+                            }
+                        }
+                    }
+
+                    pptxState.slides.push({
+                        number: i + 1,
+                        title: slideTitle,
+                        bullets: bulletTexts,
+                        images: images
+                    });
+                }
+            } catch (parseErr) {
+                console.warn("PPTX fallback:", parseErr);
+                pptxState.slides = [{
+                    number: 1,
+                    title: mod.title,
+                    bullets: ["Presentasi PowerPoint berhasil diunggah.", "Dapat dibuka di Microsoft PowerPoint, Apple Keynote, Google Slides, atau WPS Office."],
+                    images: []
+                }];
+            }
+
+            container.innerHTML = `
+            <div class="flex flex-col h-full w-full bg-slate-900 text-white select-none overflow-hidden">
+                <div class="bg-slate-800 border-b border-slate-700 px-3 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <!-- Switcher: Per Slide vs Scroll Bawah -->
+                        <div class="flex items-center bg-slate-700/80 p-0.5 rounded-lg border border-slate-600">
+                            <button id="btnPptxModeSlide" onclick="switchPptxViewMode('slide')" class="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-orange-600 text-white shadow-sm" title="Tampilan Per Slide">
+                                <i class="fa-solid fa-desktop"></i> <span class="hidden sm:inline">Per Slide</span>
+                            </button>
+                            <button id="btnPptxModeScroll" onclick="switchPptxViewMode('scroll')" class="px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-300 hover:text-white" title="Tampilan Gulir Scroll ke Bawah">
+                                <i class="fa-solid fa-arrows-up-down"></i> <span class="hidden sm:inline">Scroll Bawah</span>
+                            </button>
+                        </div>
+                        <span class="text-xs font-bold text-gray-300 truncate max-w-[120px] sm:max-w-xs hidden sm:inline">${escapeHtml(mod.title)}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div id="pptxSlideNavArea" class="flex items-center gap-1.5">
+                            <button onclick="changePptxSlide(-1)" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center font-bold text-xs transition active:scale-95" title="Slide Sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span id="pptxSlideCounter" class="text-xs font-bold font-mono px-2">1 / ${pptxState.slides.length}</span>
+                            <button onclick="changePptxSlide(1)" class="w-8 h-8 rounded-lg bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center font-bold text-xs transition active:scale-95" title="Slide Berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Unduh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Per Slide Stage -->
+                <div class="flex-1 overflow-auto p-4 sm:p-8 flex items-center justify-center bg-slate-950/70" id="pptxSlideStage">
+                    <div id="pptxSlideCard" class="w-full max-w-4xl bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-2xl shadow-2xl border border-slate-700/60 p-6 sm:p-12 flex flex-col justify-between min-h-[380px] sm:min-h-[460px] relative transition-all animate-fade-in-up">
+                    </div>
+                </div>
+
+                <!-- Continuous Scroll Stage -->
+                <div id="pptxContinuousStage" class="hidden flex-1 overflow-auto p-4 sm:p-8 bg-slate-950/80 scroll-smooth">
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        ${pptxState.slides.map(slide => `
+                            <div id="pptxScrollSlide_${slide.number}" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-2xl shadow-xl border border-slate-700/50 p-6 sm:p-10 flex flex-col">
+                                <div class="flex justify-between items-start border-b border-gray-100 dark:border-slate-700 pb-3 mb-4">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-orange-500">Slide ${slide.number}</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">MediLearn Slides</span>
+                                </div>
+                                <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">${escapeHtml(slide.title)}</h3>
+                                <div class="space-y-2.5 mb-4">
+                                    ${slide.bullets.length > 0 ? slide.bullets.map(b => `
+                                        <div class="flex items-start gap-3">
+                                            <i class="fa-solid fa-circle text-[6px] text-orange-500 mt-2 shrink-0"></i>
+                                            <p class="text-sm sm:text-base text-gray-700 dark:text-gray-200 leading-relaxed">${escapeHtml(b)}</p>
+                                        </div>
+                                    `).join('') : '<p class="text-xs text-gray-400 italic">Slide ini berisi ilustrasi atau diagram visual.</p>'}
+                                </div>
+                                ${slide.images.length > 0 ? `
+                                    <div class="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700 justify-center">
+                                        ${slide.images.map(imgSrc => `<img src="${imgSrc}" class="max-h-40 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 object-contain">`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Filmstrip Thumbnails -->
+                <div id="pptxFilmstrip" class="bg-slate-800 border-t border-slate-700 px-4 py-2 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-thin">
+                    ${pptxState.slides.map((s, idx) => `
+                        <button onclick="jumpPptxSlide(${idx})" class="pptx-thumb-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold border transition ${idx === 0 ? 'bg-orange-600 text-white border-orange-500' : 'bg-slate-700 text-gray-300 border-slate-600 hover:bg-slate-600'}">
+                            Slide ${s.number}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>`;
+
+            setupPptxSwipeGesture();
+            renderCurrentPptxSlide();
+        }
+
+        window.switchPptxViewMode = function(mode) {
+            pptxState.viewMode = mode;
+            const btnSlide = document.getElementById('btnPptxModeSlide');
+            const btnScroll = document.getElementById('btnPptxModeScroll');
+            const singleStage = document.getElementById('pptxSlideStage');
+            const continuousStage = document.getElementById('pptxContinuousStage');
+            const filmstrip = document.getElementById('pptxFilmstrip');
+
+            if (mode === 'slide') {
+                btnSlide.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-orange-600 text-white shadow-sm';
+                btnScroll.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-300 hover:text-white';
+                singleStage.classList.remove('hidden');
+                filmstrip.classList.remove('hidden');
+                continuousStage.classList.add('hidden');
+                renderCurrentPptxSlide();
+            } else {
+                btnScroll.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 bg-orange-600 text-white shadow-sm';
+                btnSlide.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-gray-300 hover:text-white';
+                singleStage.classList.add('hidden');
+                filmstrip.classList.add('hidden');
+                continuousStage.classList.remove('hidden');
+
+                const targetEl = document.getElementById(`pptxScrollSlide_${pptxState.slides[pptxState.currentIndex]?.number}`);
+                if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        function renderCurrentPptxSlide() {
+            const card = document.getElementById('pptxSlideCard');
+            if (!card || pptxState.slides.length === 0) return;
+            const slide = pptxState.slides[pptxState.currentIndex];
+
+            card.innerHTML = `
+            <div class="flex-1 flex flex-col">
+                <div class="flex justify-between items-start border-b border-gray-100 dark:border-slate-700 pb-4 mb-6">
+                    <span class="text-xs font-bold uppercase tracking-wider text-orange-500">Slide ${slide.number}</span>
+                    <span class="text-[10px] text-gray-400 font-mono">MediLearn Slides</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">${escapeHtml(slide.title)}</h2>
+                <div class="space-y-3 mb-6 flex-1">
+                    ${slide.bullets.length > 0 ? slide.bullets.map(b => `
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-circle text-[7px] text-orange-500 mt-2 shrink-0"></i>
+                            <p class="text-sm sm:text-base text-gray-700 dark:text-gray-200 leading-relaxed">${escapeHtml(b)}</p>
+                        </div>
+                    `).join('') : '<p class="text-xs text-gray-400 italic">Slide ini berisi diagram atau visualisasi bagan.</p>'}
+                </div>
+                ${slide.images.length > 0 ? `
+                    <div class="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 justify-center">
+                        ${slide.images.map(imgSrc => `<img src="${imgSrc}" class="max-h-40 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 object-contain">`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+            <div class="pt-4 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center text-[10px] text-gray-400 font-mono">
+                <span>${escapeHtml(pptxState.title)}</span>
+                <span>${slide.number} dari ${pptxState.slides.length}</span>
+            </div>`;
+
+            const counter = document.getElementById('pptxSlideCounter');
+            if (counter) counter.innerText = `${slide.number} / ${pptxState.slides.length}`;
+
+            const buttons = document.querySelectorAll('.pptx-thumb-btn');
+            buttons.forEach((btn, i) => {
+                if (i === pptxState.currentIndex) {
+                    btn.className = 'pptx-thumb-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold border transition bg-orange-600 text-white border-orange-500';
+                } else {
+                    btn.className = 'pptx-thumb-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold border transition bg-slate-700 text-gray-300 border-slate-600 hover:bg-slate-600';
+                }
+            });
+        }
+
+        window.changePptxSlide = function(delta) {
+            const next = pptxState.currentIndex + delta;
+            if (next >= 0 && next < pptxState.slides.length) {
+                pptxState.currentIndex = next;
+                if (pptxState.viewMode === 'scroll') {
+                    const targetEl = document.getElementById(`pptxScrollSlide_${pptxState.slides[next].number}`);
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    renderCurrentPptxSlide();
+                }
+            }
+        };
+
+        window.jumpPptxSlide = function(index) {
+            if (index >= 0 && index < pptxState.slides.length) {
+                pptxState.currentIndex = index;
+                if (pptxState.viewMode === 'scroll') {
+                    const targetEl = document.getElementById(`pptxScrollSlide_${pptxState.slides[index].number}`);
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    renderCurrentPptxSlide();
+                }
+            }
+        };
+
+        function setupPptxSwipeGesture() {
+            const stage = document.getElementById('pptxSlideStage');
+            if (!stage) return;
+            let startX = 0;
+            stage.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) startX = e.touches[0].clientX;
+            }, { passive: true });
+            stage.addEventListener('touchend', (e) => {
+                if (e.changedTouches.length === 1) {
+                    const diffX = e.changedTouches[0].clientX - startX;
+                    if (Math.abs(diffX) > 50) {
+                        if (diffX < 0) changePptxSlide(1);
+                        else changePptxSlide(-1);
+                    }
+                }
+            }, { passive: true });
+        }
+
+        async function renderExcelReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const arrayBuffer = await blob.arrayBuffer();
+
+            excelState.workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            excelState.activeSheet = excelState.workbook.SheetNames[0] || 'Sheet1';
+
+            container.innerHTML = `
+            <div class="flex flex-col h-full w-full bg-white dark:bg-slate-900 overflow-hidden select-none">
+                <div class="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">EXCEL SPREADSHEET</span>
+                        <span class="text-xs font-bold text-gray-800 dark:text-white truncate max-w-[180px] sm:max-w-xs">${escapeHtml(mod.title)}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" oninput="filterExcelTable(this.value)" placeholder="Cari baris data..." class="pl-8 pr-3 py-1.5 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-xs font-medium dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 w-36 sm:w-48">
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-download"></i> Unduh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 px-4 py-1.5 flex items-center gap-2 overflow-x-auto shrink-0 scrollbar-thin">
+                    ${excelState.workbook.SheetNames.map((sheetName, i) => `
+                        <button onclick="switchExcelSheet('${escapeHtml(sheetName)}')" class="excel-tab-btn px-3 py-1 rounded-md text-xs font-bold transition ${i === 0 ? 'bg-teal-600 text-white shadow-sm' : 'bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}">
+                            <i class="fa-solid fa-table mr-1 text-[10px]"></i> ${escapeHtml(sheetName)}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="flex-1 overflow-auto p-4 excel-table-container custom-scrollbar" id="excelTableArea">
+                </div>
+            </div>`;
+
+            renderExcelCurrentSheet();
+        }
+
+        function renderExcelCurrentSheet() {
+            const area = document.getElementById('excelTableArea');
+            if (!area || !excelState.workbook) return;
+
+            const sheet = excelState.workbook.Sheets[excelState.activeSheet];
+            if (!sheet) {
+                area.innerHTML = '<p class="text-center p-8 text-gray-400 text-sm">Sheet kosong.</p>';
+                return;
+            }
+
+            const htmlTable = XLSX.utils.sheet_to_html(sheet, { id: 'renderedExcelGrid', editable: false });
+            area.innerHTML = `
+            <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                ${htmlTable}
+            </div>`;
+        }
+
+        window.switchExcelSheet = function(sheetName) {
+            excelState.activeSheet = sheetName;
+            const buttons = document.querySelectorAll('.excel-tab-btn');
+            buttons.forEach(btn => {
+                if (btn.innerText.includes(sheetName)) {
+                    btn.className = 'excel-tab-btn px-3 py-1 rounded-md text-xs font-bold transition bg-teal-600 text-white shadow-sm';
+                } else {
+                    btn.className = 'excel-tab-btn px-3 py-1 rounded-md text-xs font-bold transition bg-white dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200';
+                }
+            });
+            renderExcelCurrentSheet();
+        };
+
+        window.filterExcelTable = function(keyword) {
+            const table = document.getElementById('renderedExcelGrid');
+            if (!table) return;
+            const term = keyword.toLowerCase().trim();
+            const rows = table.querySelectorAll('tr');
+            rows.forEach((row, idx) => {
+                if (idx === 0) return;
+                const text = row.innerText.toLowerCase();
+                row.style.display = (!term || text.includes(term)) ? '' : 'none';
+            });
+        };
+
+        async function renderImageReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            currentActiveBlobUrl = URL.createObjectURL(blob);
+            imageState.zoom = 1;
+            imageState.rotation = 0;
+
+            container.innerHTML = `
+            <div class="flex flex-col h-full w-full bg-slate-900 select-none overflow-hidden" id="imageViewerRoot">
+                <div class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-2.5 flex items-center justify-between gap-3 shrink-0 z-10">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">GAMBAR</span>
+                        <span class="text-xs font-bold text-gray-800 dark:text-white truncate">${escapeHtml(mod.title)}</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <button onclick="zoomImageViewer(-0.2)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 flex items-center justify-center text-xs" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <span id="imgZoomBadge" class="text-xs font-mono font-bold text-gray-600 dark:text-gray-300 min-w-[40px] text-center">100%</span>
+                        <button onclick="zoomImageViewer(0.2)" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 flex items-center justify-center text-xs" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button onclick="rotateImageViewer()" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 flex items-center justify-center text-xs" title="Putar 90°"><i class="fa-solid fa-rotate-right"></i></button>
+                        <button onclick="resetImageViewer()" class="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 text-xs font-bold" title="Reset Zoom">Reset</button>
+                        <button onclick="downloadCurrentViewerFile()" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-slate-700 dark:text-emerald-400 flex items-center justify-center text-xs"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-auto flex items-center justify-center p-4 bg-slate-950/80 cursor-grab active:cursor-grabbing">
+                    <img id="activeViewerImg" src="${currentActiveBlobUrl}" class="max-w-full max-h-[82vh] object-contain rounded-lg shadow-2xl transition-transform duration-200" alt="${escapeHtml(mod.title)}">
+                </div>
+            </div>`;
+        }
+
+        window.zoomImageViewer = function(delta) {
+            const img = document.getElementById('activeViewerImg');
+            if (!img) return;
+            imageState.zoom = Math.min(Math.max(imageState.zoom + delta, 0.4), 4.0);
+            updateImageTransform();
+        };
+
+        window.rotateImageViewer = function() {
+            imageState.rotation = (imageState.rotation + 90) % 360;
+            updateImageTransform();
+        };
+
+        window.resetImageViewer = function() {
+            imageState.zoom = 1;
+            imageState.rotation = 0;
+            updateImageTransform();
+        };
+
+        function updateImageTransform() {
+            const img = document.getElementById('activeViewerImg');
+            if (!img) return;
+            img.style.transform = `scale(${imageState.zoom}) rotate(${imageState.rotation}deg)`;
+            const badge = document.getElementById('imgZoomBadge');
+            if (badge) badge.innerText = Math.round(imageState.zoom * 100) + '%';
+        }
+
+        async function renderVideoReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            currentActiveBlobUrl = URL.createObjectURL(blob);
+
+            container.innerHTML = `
+            <div class="flex flex-col h-full w-full bg-black select-none">
+                <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-2.5 flex items-center justify-between text-white shrink-0 z-10">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">VIDEO</span>
+                        <span class="text-xs font-bold text-gray-200 truncate">${escapeHtml(mod.title)}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs font-bold">
+                            <button onclick="setVideoSpeed(0.75)" class="px-2 py-1 text-gray-400 hover:text-white rounded">0.75x</button>
+                            <button onclick="setVideoSpeed(1.0)" class="px-2 py-1 text-white bg-purple-600 rounded">1.0x</button>
+                            <button onclick="setVideoSpeed(1.25)" class="px-2 py-1 text-gray-400 hover:text-white rounded">1.25x</button>
+                            <button onclick="setVideoSpeed(1.5)" class="px-2 py-1 text-gray-400 hover:text-white rounded">1.5x</button>
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-download"></i> Unduh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col items-center justify-center p-4">
+                    <video id="activeViewerVideo" controls playsinline webkit-playsinline class="max-w-full max-h-[82vh] rounded-2xl shadow-2xl focus:outline-none bg-black">
+                        <source src="${currentActiveBlobUrl}" type="${mod.fileType || 'video/mp4'}">
+                        Browser Anda tidak mendukung pemutar video langsung.
+                    </video>
+                </div>
+            </div>`;
+        }
+
+        window.setVideoSpeed = function(rate) {
+            const vid = document.getElementById('activeViewerVideo');
+            if (vid) vid.playbackRate = rate;
+        };
+
+        async function renderAudioReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            currentActiveBlobUrl = URL.createObjectURL(blob);
+
+            container.innerHTML = `
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-gray-50 dark:bg-slate-900 select-none">
+                <div class="w-full max-w-md bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-3xl p-8 shadow-2xl flex flex-col items-center">
+                    <div class="w-28 h-28 bg-pink-50 dark:bg-slate-700/60 rounded-3xl flex items-center justify-center text-pink-500 shadow-xl mb-6 animate-pulse">
+                        <i class="fa-solid fa-podcast text-5xl"></i>
+                    </div>
+                    <span class="bg-pink-100 text-pink-700 dark:bg-pink-900/60 dark:text-pink-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">AUDIO PEMBELAJARAN</span>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 leading-snug">${escapeHtml(mod.title)}</h3>
+                    <p class="text-xs text-gray-400 font-mono mb-6">${formatBytes(mod.fileSize || blob.size)}</p>
+
+                    <audio id="activeViewerAudio" controls class="w-full shadow-md rounded-full mb-6" autoplay>
+                        <source src="${currentActiveBlobUrl}" type="${mod.fileType || 'audio/mpeg'}">
+                    </audio>
+
+                    <div class="flex items-center gap-2 w-full justify-between pt-4 border-t border-gray-100 dark:border-slate-700">
+                        <div class="flex items-center gap-1 text-xs font-bold text-gray-500">
+                            <span>Kecepatan:</span>
+                            <button onclick="document.getElementById('activeViewerAudio').playbackRate = 1.0" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700 hover:bg-gray-200">1x</button>
+                            <button onclick="document.getElementById('activeViewerAudio').playbackRate = 1.25" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700 hover:bg-gray-200">1.25x</button>
+                            <button onclick="document.getElementById('activeViewerAudio').playbackRate = 1.5" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700 hover:bg-gray-200">1.5x</button>
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-download"></i> Unduh
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        async function renderTextReader(blob, mod) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const textContent = await blob.text();
+
+            container.innerHTML = `
+            <div class="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900 p-4 sm:p-6 flex flex-col items-center">
+                <div class="w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6 sm:p-8">
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-200 dark:border-slate-700">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase">TEXT</span>
+                            <h3 class="font-bold text-gray-800 dark:text-white text-base">${escapeHtml(mod.title)}</h3>
+                        </div>
+                        <button onclick="downloadCurrentViewerFile()" class="text-xs bg-medical-600 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-medical-700 transition">
+                            <i class="fa-solid fa-download mr-1"></i> Unduh
+                        </button>
+                    </div>
+                    <pre class="whitespace-pre-wrap font-mono text-xs sm:text-sm text-gray-700 dark:text-gray-200 leading-relaxed overflow-x-auto">${escapeHtml(textContent)}</pre>
+                </div>
+            </div>`;
+        }
+
+        function renderUniversalFileCard(mod, blob, typeLabel, iconClass, textColor, bgColor, customNote) {
+            const container = document.getElementById('dynamicMediaContainer');
+            const sizeStr = formatBytes(mod.fileSize || (blob ? blob.size : 0));
+            const note = customNote || 'File ini dapat langsung dibuka atau diunduh untuk dijalankan di aplikasi bawaan sistem operasi perangkat Anda (Windows, Android, Mac, Apple iOS).';
+            
+            container.innerHTML = `
+            <div class="w-full flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-slate-700 p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center">
+                    <div class="w-20 h-20 ${bgColor} dark:bg-slate-800 ${textColor} rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm text-4xl">
+                        <i class="fa-solid ${iconClass}"></i>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold ${textColor} ${bgColor} dark:bg-slate-800 uppercase tracking-widest inline-block mb-3">${typeLabel}</span>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">${escapeHtml(mod.title)}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-mono mb-6">${escapeHtml(mod.fileName || mod.title)} • ${sizeStr}</p>
+                    
+                    <div class="bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 p-4 rounded-xl text-left mb-6 text-xs text-gray-600 dark:text-gray-300">
+                        <p class="font-bold flex items-center gap-1.5 mb-1 text-gray-800 dark:text-white"><i class="fa-solid fa-circle-info text-medical-600"></i> Dukungan Multi-Perangkat:</p>
+                        <p class="leading-relaxed">${note}</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button onclick="downloadCurrentViewerFile()" class="flex-1 bg-medical-600 hover:bg-medical-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-download"></i> Unduh / Buka File
+                        </button>
+                        <button onclick="openCurrentViewerInNewTab()" class="px-4 py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 text-gray-700 dark:text-gray-200 font-bold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-up-right-from-square"></i> Tab Baru
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        window.downloadCurrentViewerFile = function() {
+            if (!currentViewingModule) return;
+            const mod = currentViewingModule;
+            let blob = mod.fileBlob;
+            if (!(blob instanceof Blob) && mod.fileDataUrl) {
+                blob = dataUrlToBlob(mod.fileDataUrl);
+            } else if (!(blob instanceof Blob) && mod.htmlContent) {
+                blob = new Blob([mod.htmlContent], { type: 'text/html' });
+            }
+            if (!blob) {
+                return alert("Data file tidak ditemukan.");
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const ext = mod.fileExt ? ('.' + mod.fileExt) : (mod.htmlContent ? '.html' : '');
+            let filename = mod.fileName || (mod.title + ext);
+            if (!filename.includes('.')) filename += ext;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 1000);
+        };
+
+        window.openCurrentViewerInNewTab = function() {
+            if (!currentViewingModule) return;
+            const mod = currentViewingModule;
+            let blob = mod.fileBlob;
+            if (!(blob instanceof Blob) && mod.fileDataUrl) {
+                blob = dataUrlToBlob(mod.fileDataUrl);
+            } else if (!(blob instanceof Blob) && mod.htmlContent) {
+                blob = new Blob([mod.htmlContent], { type: 'text/html' });
+            }
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        };
+
+        window.closeViewerModal = () => { 
+            document.getElementById('viewerModal').classList.add('hidden'); 
+            document.getElementById('moduleIframe').src = 'about:blank'; 
+            const container = document.getElementById('dynamicMediaContainer');
+            if (container) {
+                const videos = container.querySelectorAll('video');
+                videos.forEach(v => { v.pause(); v.src = ''; });
+                const audios = container.querySelectorAll('audio');
+                audios.forEach(a => { a.pause(); a.src = ''; });
+                container.innerHTML = '';
+                container.classList.add('hidden');
+            }
+            if (currentActiveBlobUrl) {
+                URL.revokeObjectURL(currentActiveBlobUrl);
+                currentActiveBlobUrl = null;
+            }
+            if (pdfState.observer) {
+                pdfState.observer.disconnect();
+                pdfState.observer = null;
+            }
+            pdfState.renderedPages.clear();
+            pdfState.doc = null;
+            pptxState.slides = [];
+            excelState.workbook = null;
+            currentViewingModule = null;
+        };
+
+        window.openEditModal = (id, currentTitle) => { editTargetId = id; document.getElementById('editTitleInput').value = currentTitle; document.getElementById('editModal').classList.remove('hidden'); document.getElementById('editTitleInput').focus(); };
+        window.closeEditModal = () => document.getElementById('editModal').classList.add('hidden');
+        window.saveTitleEdit = async () => { const newTitle = document.getElementById('editTitleInput').value.trim(); if (!newTitle || !editTargetId) return; const mod = allModulesCache.find(m => m.id === editTargetId); if (mod) { mod.title = newTitle; await updateModuleInDB(mod); loadModules(); closeEditModal(); } };
+        window.confirmDelete = (id) => { deleteTargetId = id; document.getElementById('confirmModal').classList.remove('hidden'); };
+        document.getElementById('btnConfirmDelete').addEventListener('click', async () => { if (deleteTargetId !== null) { await deleteModuleFromDB(deleteTargetId); loadModules(); closeConfirmModal(); } });
+        window.openTermsModal = () => { document.getElementById('termsModal').classList.remove('hidden'); };
+        window.closeTermsModal = () => { document.getElementById('termsModal').classList.add('hidden'); };
+        function setLoading(isLoading) { const btn = document.getElementById('btnUpload'); btn.disabled = isLoading; btn.innerHTML = isLoading ? `<i class="loader w-4 h-4 border-white border-t-transparent inline-block mr-2"></i> Memproses...` : `<span><i class="fa-solid fa-floppy-disk"></i> Simpan File</span>`; }
+        function showStatus(msg, type) { const el = document.getElementById('uploadStatus'); el.innerHTML = type === 'error' ? `<i class="fa-solid fa-circle-exclamation text-red-600"></i> ${msg}` : `<i class="fa-solid fa-check-circle text-green-600"></i> ${msg}`; el.className = `p-3 rounded-lg text-sm border flex items-center gap-2 ${type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`; el.classList.remove('hidden'); }
+        function escapeHtml(text) { return text ? String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : ""; }
+        window.openUploadModal = () => { renderCategoryInputs(); document.getElementById('uploadModal').classList.remove('hidden'); document.getElementById('uploadStatus').classList.add('hidden'); };
+        window.closeUploadModal = () => document.getElementById('uploadModal').classList.add('hidden');
+        window.closeConfirmModal = () => document.getElementById('confirmModal').classList.add('hidden');
+
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === "Escape") { 
+                window.closeViewerModal(); 
+                window.closeConfirmModal(); 
+                window.closeUploadModal(); 
+                window.closeCategoryModal(); 
+                window.closeEditModal(); 
+                window.closeSettingsModal(); 
+                window.closeHistoryModal(); 
+                window.closeTermsModal(); 
+            } 
+        });
+
+        const MASTER_DEV_KEY = "MediLearn25DeV"; const SALT_KEY = "ML-SECURE-2025-V1"; const ADMIN_WA = "6283843870638";
+        function getDeviceId() { let id = localStorage.getItem('__ml_device_uuid'); if (!id) { id = 'DEV-' + Math.random().toString(36).substring(2, 9).toUpperCase() + '-' + Date.now().toString(36).toUpperCase(); localStorage.setItem('__ml_device_uuid', id); } return id; }
+        async function generateLicenseHash(deviceId) { const msgBuffer = new TextEncoder().encode(deviceId + SALT_KEY); const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer); const hashArray = Array.from(new Uint8Array(hashBuffer)); return "KEY-" + hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 8).toUpperCase(); }
+        window.copyToClipboard = (text) => { navigator.clipboard.writeText(text).then(() => { alert("Device ID tersalin! Kirim ke Admin."); }); };
+        window.requestViaWhatsApp = () => { const deviceId = getDeviceId(); const msg = `Halo Admin MediLearn, saya sudah membeli modul. Mohon aktivasi untuk Device ID saya: ${deviceId}`; window.open(`https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(msg)}`, '_blank'); };
+        
+        async function attemptActivation() { 
+            const input = document.getElementById('activationInput'); 
+            const code = input.value.trim(); 
+            const deviceId = getDeviceId(); 
+            if (code === MASTER_DEV_KEY) { 
+                localStorage.setItem('__ml_is_master_dev', 'true'); 
+                location.reload(); 
+                return; 
+            } 
+            const validKey = await generateLicenseHash(deviceId); 
+            const VIP_BATCH_CODES = ["MED-VIP-ALPHA", "MED-VIP-BETA"]; 
+            if (code === validKey || VIP_BATCH_CODES.includes(code)) { 
+                localStorage.setItem('__ml_license_key', code); 
+                alert("Perangkat Berhasil Diaktivasi!"); 
+                location.reload(); 
+            } else { 
+                input.classList.add('shake'); 
+                input.style.borderColor = 'red'; 
+                setTimeout(() => { input.classList.remove('shake'); input.style.borderColor = ''; }, 500); 
+            } 
+        }
+
+        async function generateKeyForClient() { const targetId = document.getElementById('targetDeviceId').value.trim(); if(!targetId) return; const key = await generateLicenseHash(targetId); const display = document.getElementById('generatedKeyDisplay'); display.innerText = key; display.onclick = () => { navigator.clipboard.writeText(key); alert("Copied!"); }; }
+        window.updateOnlineStatus = () => { if(!navigator.onLine) document.getElementById('offlineOverlay').classList.remove('hidden'); else document.getElementById('offlineOverlay').classList.add('hidden'); };
+        window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus);
+        
+        updateOnlineStatus();
+        document.addEventListener('DOMContentLoaded', initiateAppStartup);
+    </script>
+</body>
+</html>
